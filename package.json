@@ -1,0 +1,19 @@
+{
+  "name": "node-fax",
+  "version": "1.0.0",
+  "description": "NodeJS App for Fax like avantfax",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zooyalove/node-fax.git"
+  },
+  "author": "zooyalove",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/zooyalove/node-fax/issues"
+  },
+  "homepage": "https://github.com/zooyalove/node-fax#readme"
+}
