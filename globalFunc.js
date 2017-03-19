@@ -1,8 +1,11 @@
 module.exports = (() => {
 
     return {
+    	isset: (_var) => { return !!_var; },
+
         strip_sipinfo: (callid) => {
-            if((const matches = /^(.*)@(.*)$/.exec(callid)) !== null) {
+        	var matches;
+            if((matches = /^(.*)@(.*)$/.exec(callid) ) !== null) {
                 callid = matches[1];
             }
             return callid;

@@ -1,19 +1,21 @@
 #!/usr/bin/env node
 
-const func = require('./../globalFunc');
-const db = require('./models');
+var func = require('./../globalFunc');
+//var db = require('./models');
 
 if (process.argv.length === 2) {
     console.error(process.argv[1] + ' device CallID1 CallIDn ...');
     process.exit(1)
 }
 
-const device = process.argv[2];
+var device = process.argv[2];
 
-const isset = (_var) => ( !!_var );
+var callid1;
 
-if (!isset(process.argv[3])) {
-    const callid1 = "EMPTY CALLID";
+if (!func.isset(process.argv[3])) {
+    callid1 = "EMPTY CALLID";
 } else {
-    const callid1 = func.strip_sipinfo(process.argv[3]);
+    callid1 = func.strip_sipinfo(process.argv[3]);
 }
+
+console.log(device, callid1);
