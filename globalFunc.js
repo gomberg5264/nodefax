@@ -1,6 +1,17 @@
+var SysLog = require('./models/syslog');
+
 module.exports = (() => {
 
     return {
+        faxlog: (log, echo) => {
+            var syslog = new SysLog({
+                logtext: log
+            });
+            syslog.save();
+
+            if (echo) console.log(log);
+        },
+
     	isset: (_var) => { return !!_var; },
 
         strip_sipinfo: (callid) => {
