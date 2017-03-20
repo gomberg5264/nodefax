@@ -1,4 +1,7 @@
 var DynConf = require('./../models/dynconf');
+var SysLog = require('./../models/syslog');
+var mongoose = require('mongoose');
+mongoose.Promise = global.Promise;
 
 module.exports = (() => {
     var dynconf_id= null,
@@ -18,10 +21,7 @@ module.exports = (() => {
         lookup: (pDevice, pCallid) => {
             return new Promise((resolve, reject) => {
                 DynConf.find({callid: pCallid}, (err, docs) => {
-                    if (err) {
-                        reject(err);
-                        return;
-                    }
+                    if (err) throw err;
 
                     if (!docs) {
                         reject(false);
@@ -39,69 +39,74 @@ module.exports = (() => {
         },
 
         create: (pDevice, pCallid) => {
+            device = pDevice;
+            callid = pCallid;
 
+            var rule = {device: pDevice, callid: pCallid};
+
+            if (DynConf.find(rule)) {
+                error = "Rule exists";
+                return false;
+            }
+
+            var dc = new DynConf(rule);
+            if (dc.save()) {
+                return true;
+            }
+
+            error = "Rule not created";
+            return false;
         },
 
         remove: (id) => {
+            if (mongoose.Types.ObjectId.isValid(id)) {
+                return DynConf.remove({ _id: id });
+            }
+            return false;
+        },
 
+        list_rules: () => {
+            return DynConf.find().sort({ callid: 1 });
         },
 
         load_rule: (id) => {
+            if (!id) {
+                error = "DynConf not selected";
+                return false;
+            }
 
+            if (mongoose.Types.ObjectId.isValid(id)) {
+                return DynConf.findById(id, (err, res) => {
+                    console.log(res);
+                    dynconf_id = res['_id'];
+                    device = res['device'];
+                    callid = res['callid'];
+                    return true
+                });
+            }
+
+            error = "Rule " + id + " doesn't exist";
+            return false;
         },
 
         save_rule: (pDevice, pCallid) => {
+            if (!dynconf_id) {
+                error = "DynConf not loaded";
+                return false;
+            }
 
+            device = pDevice;
+            callid = pCallid;
+
+            DynConf.findById(dynconf_id, (err, dc) => {
+                if (err) throw err;
+
+                dc.device = pDevice;
+                dc.callid = pCallid;
+
+                dc.save();
+                return true;
+            });
         }
     };
 })();
-
-// DynamicConfig.prototype.lookup = (device, callid, cb) => {
-//     DynConf.find({callid: callid}, (err, docs) => {
-//         if (err) throw err;
-
-//         if (!docs) {
-//             cb('No Data~!', false);
-//             return;
-//         }
-
-//         docs.forEach((row, index) => {
-//             if (!row['device']) {
-//                 cb(null, true);
-//                 return;
-//             }
-            
-//             if (row['device'] === device) {
-//                 cb(null, true);
-//                 return;
-//             }
-//         });
-//     });
-// }
-
-// DynamicConfig.prototype.create = (device, callid) => {
-//     this.device = device;
-//     this.callid = callid;
-//     var rule = {
-//         device: device,
-//         callid: callid
-//     };
-
-//     DynConf.find(rule, (err, docs) => {
-//         if (err) throw err;
-
-//         if (!docs) {
-//             var dynconf = new DynConf(rule);
-//             dynconf.save((err) => {
-//                 if (err) throw err;
-//             });
-
-//         }
-//     });
-// }
-
-// DynamicConfig.prototype.remove = (id) => {
-//     DynConf.remove({dynconf_id: id}, (err) => {
-//         if(err) throw err;
-//     });
-// }

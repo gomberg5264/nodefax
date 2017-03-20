@@ -2,8 +2,8 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var DynConf = new Schema({
-	device: Integer,
-	callid: Integer
+	device: String,
+	callid: String
 });
 
 module.exports = mongoose.model('dynconf', DynConf);

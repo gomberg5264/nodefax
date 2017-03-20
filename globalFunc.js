@@ -4,6 +4,8 @@ module.exports = (() => {
 
     return {
         faxlog: (log, echo) => {
+            var echo = echo || false;
+
             var syslog = new SysLog({
                 logtext: log
             });
