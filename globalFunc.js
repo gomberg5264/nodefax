@@ -22,6 +22,11 @@ module.exports = (() => {
                 callid = matches[1];
             }
             return callid;
+        },
+
+        clean_faxnum: (fnum) => {
+            var res = fnum.replace(/[^\+\w]/, '');
+            return res;
         }
     };
 
