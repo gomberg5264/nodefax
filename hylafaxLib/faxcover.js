@@ -15,6 +15,7 @@ var GetOpt = require('node-getopt');
 var db = require('./../models');
 var func = require('./../globalFunc');
 var conf = require('./config');
+var path = require('path');
 
 var getopt = new GetOpt([
     ['t', '', 'to'],
@@ -54,9 +55,9 @@ if (!func.isset(options['f']) || !func.isset(options['n'])) {
 }
 
 var using_html_cp = false;
-var coverpage_file = conf.INSTALLDIR + '/images/' + conf.COVERPAGE_FILE;
+var coverpage_file = path.join(conf.INSTALLDIR, 'images', conf.COVERPAGE_FILE);
 
 var from_name = options['f'];
 var from_email = func.isset(options['M']) ? options['M'] : null;
 
-func.faxlog(`faxcover> from: '${from_name}' email: '${from_email}'`);
+func.faxlog(`faxcover> from: ${from_name} email: ${from_email}`);
