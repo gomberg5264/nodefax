@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
+var ObjectId = Schema.Types.ObjectId;
 
 var Modems = new Schema({
     device: {
@@ -9,7 +10,7 @@ var Modems = new Schema({
     alias: String,
     contact: String,
     printer: String,
-    faxcatid: String
+    faxcatid: ObjectId
 });
 
 module.exports = mongoose.model('modem', Modems);

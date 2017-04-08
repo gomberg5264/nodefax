@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
+var ObjectId = Schema.Types.ObjectId;
 
 var FaxArchive = new Schema({
     faxpath: {
@@ -8,11 +9,11 @@ var FaxArchive = new Schema({
     },
     pages: Number,
 
-    faxnumid: Number,
-    companyid: Number,
-    faxcatid: String,
-    didr_id: String,
-    user_id: String,
+    faxnumid: ObjectId,
+    companyid: ObjectId,
+    faxcatid: ObjectId,
+    didr_id: ObjectId,
+    user_id: ObjectId,
     
     description: String,
     lastmoduser: String,

@@ -1,8 +1,9 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
+var ObjectId = Schema.Types.ObjectId;
 
 var AddressBookFAX = new Schema({
-    abook_id: String,
+    abook_id: ObjectId,
     faxnumber: {
         type: String,
         required: true
@@ -12,7 +13,7 @@ var AddressBookFAX = new Schema({
     to_person: String,
     to_location: String,
     to_voicenumber: String,
-    faxcatid: String,
+    faxcatid: ObjectId,
     faxfrom: {
         type: Number,
         default: 0

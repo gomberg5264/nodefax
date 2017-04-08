@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
+var ObjectId = Schema.Types.ObjectId;
 
 var DistroList = new Schema({
     listname: {
@@ -11,7 +12,7 @@ var DistroList = new Schema({
         type: Date,
         default: Date.now
     },
-    lastmod_user: String
+    lastmod_user: ObjectId
 });
 
 module.exports = mongoose.model('distrolist', DistroList);

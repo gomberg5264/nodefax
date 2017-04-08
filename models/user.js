@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
+var ObjectId = Schema.Types.ObjectId;
 
 var bcrypt = require('bcryptjs');
 
@@ -27,7 +28,7 @@ var User = new Schema({
     from_voicenumber: String,
     from_faxnumber: String,
 
-    coverpage_id: String,
+    coverpage_id: ObjectId,
     faxperpageinbox: Number,
     faxperpagearchive: Number,
 
