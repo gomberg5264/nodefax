@@ -1,4 +1,5 @@
 var func = require('./../globalFunc');
+var conf = require('./../hylafaxLib/config');
 var AddressBook = require('./../models/addressbook');
 var AddressBookEmail = require('./../models/addressbookemail');
 var AddressBookFAX = require('./../models/addressbookfax');
@@ -69,7 +70,15 @@ module.exports = ( () => {
         },
 
         get_companies: (with_reserved) => {
+            with_reserved = (with_reserved) ? true : false;
 
+            var sql = (!with_reserved) ? {'company': {$ne: conf.RESERVED_FAX_NUM} } : {};
+            return AddressBook.find(sql, null, {sort: {company: 1}}, (err, books) => {
+                if (err) return false;
+
+                return books;
+                }
+            );
         },
 
         search_companies: (query) => {
@@ -78,7 +87,12 @@ module.exports = ( () => {
             var lc_kw = keywords.toLowerCase();
             var uc_kw = keywords.toUpperCase();
 
-            AddressBook.find()
+            var sql = {$or: [{'company': new RegExp(keywords, 'i')}, {'company': new RegExp(lc_kw, 'i')}]};
+            return AddressBook.find(sql, null, {sort: {company: 1}}, (err, books) => {
+                if (err) return false;
+
+                return books;
+            })
         },
 
         totalfaxes: () => {
@@ -110,7 +124,12 @@ module.exports = ( () => {
                 return false;
             }
             company = companyname;
-            return AddressBook.update();
+            return AddressBook.update({_id: abook_id}, {'company': company}, (err) => {
+                if (!err) {
+                    return false;
+                }
+                return 
+            });
         },
 
         delete_cid: (cid) => {
