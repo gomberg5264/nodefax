@@ -27,6 +27,21 @@ module.exports = (() => {
         clean_faxnum: (fnum) => {
             var res = fnum.replace(/[^\+\w]/, '');
             return res;
+        },
+
+        array_merge: (a, a2) => {
+            if (a instanceof Array) {
+                return a.concat(a2);
+            } else {
+                var p, r = {};
+                for (p in a) {
+                    r[p] = a[p];
+                }
+                for (p in a2) {
+                    r[p] = a2[p];
+                }
+                return r;
+            }
         }
     };
 
