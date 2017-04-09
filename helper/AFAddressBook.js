@@ -8,6 +8,21 @@ module.exports = ( () => {
     var abook_id, company, email_array={}, fax_array={}, error=null;
 
     function save_settings(data) {
+        if (fax_array['abook_id'] === 'undefined') {
+            error = 'No abookfax_id loaded';
+            return false;
+        }
+
+        if (data['faxnumber'] !== 'undefined') {
+            if (!data['faxnumber']) {
+                return delete_faxnumid(fax_array['abookfax_id']);
+            }
+
+            fax_array = 
+        }
+    }
+
+    function delete_faxnumid(abookfax_id) {
 
     }
 
@@ -164,9 +179,7 @@ module.exports = ( () => {
 
         },
 
-        delete_faxnumid: (abookfax_id) => {
-
-        },
+        delete_faxnumid: delete_faxnumid,
 
         loadbyfaxnumid: (faxnumber, mult) => {
 
