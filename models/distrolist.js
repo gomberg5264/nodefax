@@ -12,7 +12,10 @@ var DistroList = new Schema({
         type: Date,
         default: Date.now
     },
-    lastmod_user: ObjectId
+    lastmod_user: {
+        type: ObjectId,
+        ref: 'user'
+    }
 });
 
 module.exports = mongoose.model('distrolist', DistroList);

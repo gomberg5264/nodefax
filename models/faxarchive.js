@@ -9,11 +9,26 @@ var FaxArchive = new Schema({
     },
     pages: Number,
 
-    faxnumid: ObjectId,
-    companyid: ObjectId,
-    faxcatid: ObjectId,
-    didr_id: ObjectId,
-    user_id: ObjectId,
+    faxnumid: {
+        type: ObjectId,
+        ref: 'addressbookfax'
+    },
+    companyid: {
+        type: ObjectId,
+        ref: 'addressbook'
+    },
+    faxcatid: {
+        type: ObjectId,
+        ref: 'faxcategory'
+    },
+    didr_id: {
+        type: ObjectId,
+        ref: 'didroute'
+    },
+    user_id: {
+        type: ObjectId,
+        ref: 'user'
+    },
     
     description: String,
     lastmoduser: String,

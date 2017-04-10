@@ -5,15 +5,15 @@ var AddressBookEmail = require('./../models/addressbookemail');
 var AddressBookFAX = require('./../models/addressbookfax');
 
 module.exports = ( () => {
-    var abook_id, company, email_array={}, fax_array={}, error=null, multiple=false;
+    var abook_id, company, email_array={}, fax_array={}, error=null, multiple=false, queried=false, results=null;
 
     function save_settings(data) {
-        if (fax_array['abook_id'] === 'undefined') {
+        if ((typeof fax_array['abook_id']) === 'undefined') {
             error = 'No abookfax_id loaded';
             return false;
         }
 
-        if (data['faxnumber'] !== 'undefined') {
+        if ((typeof data['faxnumber']) !== 'undefined') {
             if (!data['faxnumber']) {
                 return delete_faxnumid(fax_array['abookfax_id']);
             }
@@ -134,7 +134,7 @@ module.exports = ( () => {
         },
 
         totalfaxes: () => {
-            if (fax_array['abookfax_id'] !== 'undefined') {
+            if ((typeof fax_array['abookfax_id']) !== 'undefined') {
                 error = 'No abookfax_id loaded';
                 return false;
             }
@@ -282,17 +282,103 @@ module.exports = ( () => {
         },
 
         loadbyfaxnum: (faxnumber, mult) => {
+            if (!faxnumber) {
+                error = 'No faxnumber sent';
+                return false;
+            }
 
+            mult = false;
+            multiple = false;
+
+            faxnumber = func.clean_faxnum(faxnumber);
+
+            if (AddressBookFAX.find({'faxnumber': faxnumber}, (err, bookfaxes) => {
+                if (err) return false;
+
+                if (bookfaxes instanceof Array) {
+                    var num = bookfaxes.length;
+
+                    if (num === 1) {
+                        load_faxvals(bookfaxes[0]);
+                    }
+                    else if (num > 1) {
+                        mult = true;
+                        multiple = true;
+                    }
+                    return true;
+                }
+            })) {
+                return {'result': true, 'mult': mult};
+            }
+
+            error = "No company for this fax number '" + faxnumber + "'";
+            return false;
         },
 
         reassign: (newcid) => {
+            if (!newcid || !abook_id) {
+                error = 'No abook_id loaded';
+                return false;
+            }
 
+            return AddressBookFAX.find({'abook_id': newcid}, (err, bookfax) => {
+                if (err) {
+                    error = 'Invalid cid';
+                    return false;
+                }
+
+                if (bookfax) {
+                    return AddressBookFAX.update(
+                        {'abook_id': abook_id},
+                        {$set: {'abook_id': newcid}},
+                        (err, upd_bookfax) => {
+                            if (err) {
+                                error = 'Error updating AddressBookFAX';
+                                return false;
+                            }
+                            return module.exports.delete_cid(abook_id);
+                        }
+                    );
+                }
+            });
         },
 
         save_settings: save_settings,
 
-        get_multinfo: (abookfax_id, pCompany) => {
+        get_multinfo: () => {
+            if (!multiple) {
+                error = 'No nultiple results';
+                return false;
+            }
 
+            if (!queried) {
+                var faxnumber = ((typeof fax_array['faxnumber']) !== 'undefined') ?
+                    fax_array['faxnumber'] : null;
+                
+                AddressBookFAX.find({'faxnumber': faxnumber}, {'_id': 1})
+                            .populate('abook_id','company')
+                            .exec( (err, bookfaxes) => {
+                                queried = true;
+                                results = bookfaxes;
+                            });
+            }
+
+            if (results instanceof Array) {
+                var data = results.shift();
+                if (data) {
+                    return {
+                        'result': true,
+                        'abookfax_id': data._id,
+                        'company': data.abook_id.company
+                    }
+                }
+            }
+
+            multiple = false;
+            fax_array['faxnumber'] = null;
+            queried = false;
+            results = null;
+            return false;
         },
 
         get_faxnums: () => {
@@ -301,46 +387,46 @@ module.exports = ( () => {
                 return null;
             }
 
-            return AddressBookFax.find({'abook_id': abook_id}, (err, bookfaxs) => {
+            return AddressBookFax.find({'abook_id': abook_id}, (err, bookfaxes) => {
                 if (err) return null;
-                return bookfaxs;
+                return bookfaxes;
             });
         },
 
         get_faxnumber: () => {
-            if (fax_array['abookfax_id'] === 'undefined') {
+            if ((typeof fax_array['abookfax_id']) === 'undefined') {
                 error = 'No abookfax_id loaded';
                 return false;
             }
-            return (fax_array['faxnumber'] !== 'undefined') ? fax_array['faxnumber'] : null;
+            return ((typeof fax_array['faxnumber']) !== 'undefined') ? fax_array['faxnumber'] : null;
         },
 
         get_description: () => {
-            if (fax_array['abookfax_id'] === 'undefined') {
+            if ((typeof fax_array['abookfax_id']) === 'undefined') {
                 error = 'No abookfax_id loaded';
                 return false;
             }
-            return (fax_array['description'] !== 'undefined') ? fax_array['description'] : null;
+            return ((typeof fax_array['description']) !== 'undefined') ? fax_array['description'] : null;
         },
 
         get_category: () => {
-            if (fax_array['abookfax_id'] === 'undefined') {
+            if ((typeof fax_array['abookfax_id']) === 'undefined') {
                 error = 'No abookfax_id loaded';
                 return false;
             }
-            return (fax_array['faxcatid'] !== 'undefined') ? fax_array['faxcatid'] : null;
+            return ((typeof fax_array['faxcatid']) !== 'undefined') ? fax_array['faxcatid'] : null;
         },
 
         get_printer: () => {
-            if (fax_array['abookfax_id'] === 'undefined') {
+            if ((typeof fax_array['abookfax_id']) === 'undefined') {
                 error = 'No abookfax_id loaded';
                 return false;
             }
-            return (fax_array['printer'] !== 'undefined') ? fax_array['printer'] : null;
+            return ((typeof fax_array['printer']) !== 'undefined') ? fax_array['printer'] : null;
         },
 
         get_faxnumid: () => {
-            if (fax_array['abookfax_id'] === 'undefined') {
+            if ((typeof fax_array['abookfax_id']) === 'undefined') {
                 error = 'No abookfax_id loaded';
                 return false;
             }
@@ -348,70 +434,70 @@ module.exports = ( () => {
         },
 
         get_email: () => {
-            if (fax_array['abookfax_id'] === 'undefined') {
+            if ((typeof fax_array['abookfax_id']) === 'undefined') {
                 error = 'No abookfax_id loaded';
                 return false;
             }
-            return (fax_array['email'] !== 'undefined') ? fax_array['email'] : null;
+            return ((typeof fax_array['email']) !== 'undefined') ? fax_array['email'] : null;
         },
 
         get_faxfrom: () => {
-            if (fax_array['abookfax_id'] === 'undefined') {
+            if ((typeof fax_array['abookfax_id']) === 'undefined') {
                 error = 'No abookfax_id loaded';
                 return false;
             }
-            return (fax_array['faxfrom'] !== 'undefined') ? fax_array['faxfrom'] : null;
+            return ((typeof fax_array['faxfrom']) !== 'undefined') ? fax_array['faxfrom'] : null;
         },
 
         get_faxto: () => {
-            if (fax_array['abookfax_id'] === 'undefined') {
+            if ((typeof fax_array['abookfax_id']) === 'undefined') {
                 error = 'No abookfax_id loaded';
                 return false;
             }
-            return (fax_array['faxto'] !== 'undefined') ? fax_array['faxto'] : null;
+            return ((typeof fax_array['faxto']) !== 'undefined') ? fax_array['faxto'] : null;
         },
 
         get_to_person: () => {
-            if (fax_array['abookfax_id'] === 'undefined') {
+            if ((typeof fax_array['abookfax_id']) === 'undefined') {
                 error = 'No abookfax_id loaded';
                 return false;
             }
-            return (fax_array['to_person'] !== 'undefined') ? fax_array['to_person'] : null;
+            return ((typeof fax_array['to_person']) !== 'undefined') ? fax_array['to_person'] : null;
         },
 
         get_to_location: () => {
-            if (fax_array['abookfax_id'] === 'undefined') {
+            if ((typeof fax_array['abookfax_id']) === 'undefined') {
                 error = 'No abookfax_id loaded';
                 return false;
             }
-            return (fax_array['to_location'] !== 'undefined') ? fax_array['to_location'] : null;
+            return ((typeof fax_array['to_location']) !== 'undefined') ? fax_array['to_location'] : null;
         },
 
         get_to_voicenumber: () => {
-            if (fax_array['abookfax_id'] === 'undefined') {
+            if ((typeof fax_array['abookfax_id']) === 'undefined') {
                 error = 'No abookfax_id loaded';
                 return false;
             }
-            return (fax_array['to_voicenumber'] !== 'undefined') ? fax_array['to_voicenumber'] : null;
+            return ((typeof fax_array['to_voicenumber']) !== 'undefined') ? fax_array['to_voicenumber'] : null;
         },
 
         inc_faxfrom: () => {
-            if (fax_array['abookfax_id'] === 'undefined') {
+            if ((typeof fax_array['abookfax_id']) === 'undefined') {
                 error = 'No abookfax_id loaded';
                 return false;
             }
 
-            var faxfrom = (fax_array['faxfrom'] !== 'undefined') ? fax_array['faxfrom']+1 : 1;
+            var faxfrom = ((typeof fax_array['faxfrom']) !== 'undefined') ? fax_array['faxfrom']+1 : 1;
             return save_settings({'faxfrom': faxfrom});
         },
 
         inc_faxto: () => {
-            if (fax_array['abookfax_id'] === 'undefined') {
+            if ((typeof fax_array['abookfax_id']) === 'undefined') {
                 error = 'No abookfax_id loaded';
                 return false;
             }
 
-            var faxto = (fax_array['faxto'] !== 'undefined') ? fax_array['faxto']+1 : 1;
+            var faxto = ((typeof fax_array['faxto']) !== 'undefined') ? fax_array['faxto']+1 : 1;
             return save_settings({'faxto': faxto});
         },
 

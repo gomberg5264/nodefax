@@ -3,7 +3,10 @@ var Schema = mongoose.Schema;
 var ObjectId = Schema.Types.ObjectId;
 
 var AddressBookEmail = new Schema({
-    abook_id: ObjectId,
+    abook_id: {
+        type: ObjectId,
+        ref: 'addressbook'
+    },
     contact_name: String,
     contact_email: {
         type: String,

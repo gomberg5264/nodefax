@@ -10,7 +10,10 @@ var Modems = new Schema({
     alias: String,
     contact: String,
     printer: String,
-    faxcatid: ObjectId
+    faxcatid: {
+        type: ObjectId,
+        ref: 'faxcategory'
+    }
 });
 
 module.exports = mongoose.model('modem', Modems);

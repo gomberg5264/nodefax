@@ -124,6 +124,6 @@ file_data.forEach( (line) => {
     }
 });
 
-if (to_company === 'undefined') {
+if (!to_company) {
     to_company = external;
 }

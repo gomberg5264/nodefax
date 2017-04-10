@@ -28,7 +28,10 @@ var User = new Schema({
     from_voicenumber: String,
     from_faxnumber: String,
 
-    coverpage_id: ObjectId,
+    coverpage_id: {
+        type: ObjectId,
+        ref: 'coverpage'
+    },
     faxperpageinbox: Number,
     faxperpagearchive: Number,
 
