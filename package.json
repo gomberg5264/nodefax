@@ -20,6 +20,7 @@
     "bcryptjs": "^2.4.3",
     "mongoose": "^4.9.3",
     "node-getopt": "^0.2.3",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "strftime": "^0.10.0"
   }
 }

@@ -32,12 +32,12 @@ var alert = false;
 
 switch ( why ) {
     case 'done':
-        var faxdone = true;
+        faxdone = true;
         break;
 
     case 'blocked':
     case 'requeued':
-        var alert = true;
+        alert = true;
         break;
 
     case 'format_failed':
@@ -50,7 +50,7 @@ switch ( why ) {
     case "poll_rejected":
     case "poll_failed":
     default:
-        var fatal = true;
+        fatal = true;
         break;
 }
 

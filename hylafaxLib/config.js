@@ -1,4 +1,5 @@
 var path = require('path');
+var fs = require('fs');
 
 module.exports = ( () => {
 
@@ -7,6 +8,7 @@ module.exports = ( () => {
 	var BINARYDIR = '/usr/bin';
 	var HYLAFAX_PREFIX = '/usr';
 	var HYLASPOOL = '/var/spool/hylafax';
+    var HTML2PS = '/usr/local/bin/html2ps';
 
     var PRINTCMD = '/usr/bin/lpr';
     var PRINTFAX2PS = '/usr/bin/fax2ps';
@@ -34,7 +36,19 @@ module.exports = ( () => {
         HYLASPOOL: HYLASPOOL,
         HYLATIFF2PS: false,
 
+        RESTRICTED_USER_MODE: false,
+        INBOX_LIST_MODEM: false,
+        FOCUS_ON_NEW_FAX: false,
+        FOCUS_ON_NEW_FAX_POPUP: false,
+
+        FROM_COMPANY: '',
+        FROM_LOCATION: '',
+        FROM_FAXNUMBER: '',
+        FROM_VOICENUMBER: '',
+        DEFAULT_TSI_ID: '',
+
         FAXMAILUSER: 'faxmail',
+
         ENABLE_DL_TIFF: false,
         SHOW_ALL_CONTACTS: true,
         NUM_PAGES_FOLLOW: 0,
@@ -57,7 +71,9 @@ module.exports = ( () => {
         PDFPRINTCMD: '/usr/bin/lpr',
         FAXRCVD_PRINT_PDF: FAXRCVD_PRINT_PDF,
 
-        HTML2PS: '/usr/local/bin/html2ps',
+        HTML2PS: HTML2PS,
+        USE_HTML_COVERPAGE: fs.existsSync(HTML2PS),
+        COVERPAGE_MATCH: 'XXXX-',
 
         // SMTP Setting
         USE_SMTPSERVER: false,
@@ -110,11 +126,14 @@ module.exports = ( () => {
         EMAIL_DATE_FORMAT: '%d.%m.%Y %H:%M',
         ARCHIVE_DATE_FORMAT: '%d.%m.%Y %H:%i',
 
+        MAX_PASSWD_SIZE: 15,
+        MIN_PASSWD_SIZE: 8,
+
         HAS_NEGATIVE_TIFF: false,
 
         ARCHIVE: path.join(INSTALLDIR, 'faxes', 'recvd'),
         ARCHIVE_SENT: path.join(INSTALLDIR, 'faxes', 'sent'),
-        TMPDIR: path.join(INSTALLDIR, 'tmp/'),
+        TMPDIR: path.join(INSTALLDIR, 'tmp'),
         PHONEBOOK: path.join(INSTALLDIR, 'pbook.phb'),
         FAXCOVER: path.join(INSTALLDIR, 'hylafaxLib', 'faxcover.js'),
 
