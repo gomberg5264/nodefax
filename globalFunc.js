@@ -9,7 +9,7 @@ module.exports = (() => {
 
     function genpasswd(len) {
         var len = len || conf.MIN_PASSWD_SIZE;
-        return bcrypt.hashSync()
+        return bcrypt.hashSync(process.hrtime()[0], len);
     }
 
     return {
@@ -98,7 +98,36 @@ module.exports = (() => {
         },
 
         tmpfilename: (suffix) => {
-            conf.TMPDIR
+            var filename = 'nodefax-' + genpasswd() + '.' + suffix;
+            return path.join(conf.TMPDIR, filename);
+        },
+
+        wordwrap: (str, intWidth, strBreak, cut) => {
+            var m = ((arguments.length >= 2) ? arguments[1] : 75);
+            var b = ((arguments.length >= 3) ? arguments[2] : '\n');
+            var c = ((arguments.length >= 4) ? arguments[3] : false);
+            var i, j, l, s, r;
+
+            str += '';
+
+            if (m < 1) {
+                return str;
+            }
+
+            for (i = -1, l = (r = str.split(/\r\n|\n|\r/)).length; ++i < l; r[i] += s) {
+                for (s=r[i], r[i]=''; s.length > m; r[i] += s.slice(0, j) + ((s=s.slice(j)).length ? b : '')) {
+                    j = (c === 2 || (j = s.slice(0, m + 1).match(/\S*(\s)?$/))[1]) ?
+                        m :
+                        j.input.length - j[0].length || c === true && m ||
+                        j.input.length + (j = s.slice(m).match(/^\S*/))[0].length;
+                }
+            }
+            return r.join('\n');
+        },
+
+        rem_nl: (str) => {
+            var str = str.replace(/\r/, '');
+            return str.replace(/\n/, '');
         }
     };
 

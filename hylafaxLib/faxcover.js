@@ -12,13 +12,15 @@
 // }
 
 var GetOpt = require('node-getopt');
+var path = require('path');
+var fs = require('fs');
+var strftime = require('strftime');
+var child_process = require('child_process');
+
 var db = require('./../models');
 var User = require('./../models/user');
 var func = require('./../globalFunc');
 var conf = require('./config');
-var path = require('path');
-var fs = require('fs');
-var strftime = require('strftime');
 
 var getopt = new GetOpt([
     ['t', '', 'to'],
@@ -165,5 +167,37 @@ if (using_html_cp) {
 
     var filedata = tpl.join('\n');
 
-    
+    var filename = func.tmpfilename('html');
+
+    var fd;
+    if (!(fd = fs.openSync(filename, 'w'))) {
+        console.log(`Cannot open file (${filename})`);
+        process.exit(1);
+    }
+    if (fs.writeSync(fd, filedata) === false) {
+        console.log(`Cannot write to file (${filename})`);
+    }
+    fs.closeSync(fd);
+
+    child_process.execSync(conf.HTML2PS + ' ' + filename);    
+} else {
+    var maxlen = (func.isset(options['z'])) ? options['z'] : conf.CPAGE_LINELEN;
+    var comments;
+
+    if (func.isset(options['c'])) {
+        var tmpcmnt = options['c'];
+        var ctemp = func.wordwrap(tmpcmnt, maxlen, '\n', true);
+        comments = ctemp.split('\n');
+    } else {
+        comments = new Array();
+    }
+
+    if (comments instanceof Array) {
+        comments.forEach( (comment, index) => {
+            values['comments'+index] = (func.isset(comment)) ? func.rem_nl(comment) : null;
+        });
+    }
+
+    tpl = func.process_html_template(coverpage_file, conf.COVERPAGE_MATCH, values);
+    console.log(tpl.join(''));
 }
