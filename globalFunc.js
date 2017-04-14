@@ -9,7 +9,86 @@ module.exports = (() => {
 
     function genpasswd(len) {
         var len = len || conf.MIN_PASSWD_SIZE;
-        return bcrypt.hashSync(process.hrtime()[0], len);
+        return (bcrypt.hashSync(process.hrtime()[0], 8)).substring(0, len);
+    }
+
+    function strpos (haystack, needle, offset) {
+        var i = (haystack + '').indexOf(needle, (offset || 0));
+        return i === -1 ? false : i;
+    }
+
+    function decode_entity(val) {
+        return html_entity_decode(val, ENT_QUOTES, "UTF-8");
+    }
+
+    function unaccent(text) {
+        var search = new Array(    "à", "á", "â", "ä",
+                            "è", "é", "ê", "ë",
+                            "ì", "í",  "î", "ï",
+                            "ò", "ó", "ô", "ö",
+                            "ù", "ú", "û", "ü",
+                            "^", "(", ")", "’", "\\",
+                            "”", "¡", "™", "£",
+                            "¢", "∞", "§", "¶",
+                            "•", "ª", "º", "–",
+                            "≠", "œ", "∑", "´",
+                            "®", "†", "¥", "¨",
+                            "’", "»", "Å", "Í",
+                            "Î", "Ï", "˝", "Ó",
+                            "Ô", "", "Ò", "Ú",
+                            "Æ", "¸", "˛", "Ç",
+                            "◊", "ı", "˜", "Â",
+                            "¯", "˘", "¿", "ˆ",
+                            "ø", "“", "‘", "å",
+                            "ß", "∂", "ƒ", "©",
+                            "˙", "˚", "¬", "…",
+                            "æ", "≈", "ç", "√",
+                            "∫", "≤", "≥", "÷",
+                            "⁄", "€", "‹", "›",
+                            "ﬁ", "ﬂ", "‡", "°",
+                            "·", "‚", "—", "±",
+                            "Œ", "„", "´", "‰",
+                            "ˇ", "Á", "¨", "ˆ",
+                            "Ø", "∏", "”");
+
+        var replace = new Array(   "\210", "\207", "\211", "\212", 
+                            "\217", "\216", "\220", "\221",
+                            "\223", "\222", "\224", "\225",
+                            "\230", "\227", "\231", "\232",
+                            "\235", "\234", "\236", "\237",
+                            "\136", "(", ")", "\325", "\\\\",
+                            "\323", "\301", "\252", "\243",
+                            "\242", "\245", "\244", "\246",
+                            "\245", "\237", "\274", "\320",
+                            "\271", "\317", "\345", "\253",
+                            "\250", "\240", "\264", "\254",
+                            "\325", "\310", "\201", "\352",
+                            "\353", "\354", "\375", "\356",
+                            "\357", "\360", "\361", "\362",
+                            "\256", "\374", "\376", "\202",
+                            "\340", "\365", "\367", "\345",
+                            "\370", "\371", "\300", "\366",
+                            "\277", "\322", "\324", "\214",
+                            "\247", "\266", "\304", "\251",
+                            "\372", "\373", "\302", "\311",
+                            "\276", "\273", "\215", "\326",
+                            "\362", "\243", "\263", "\270",
+                            "\244", "\333", "\334", "\335",
+                            "\336", "\337", "\340", "\260",
+                            "\341", "\342", "\321", "\261",
+                            "\316", "\343", "\253", "\344",
+                            "\377", "\347", "\254", "\366",
+                            "\257", "\325", "\323");
+        
+        if (text instanceof Array) {
+            print "<p>Got ";
+            print_r(text);
+            process.exit(1);
+        }
+        
+        text = decode_entity(text);
+        
+        return text.replace(search, replace);
     }
 
     return {
@@ -89,6 +168,31 @@ module.exports = (() => {
                                 });
                             }
                         });
+                    }
+                }
+                ret.push(line);
+            });
+
+            return ret;
+        },
+
+        process_template: (template, match, values) => {
+            var ret = new Array();
+            var lines = fs.readFileSync(template);
+            var matchlen = match.length;
+
+            // search line if it matches "XXXX-symbol". if so, swap the appropriate value
+            var re = new RegExp(match);
+            var sym_re = new RegExp(match + '\b');
+            lines.forEach( (line) => {
+                if (line.match(re)) {
+                    var pos_start = strpos(line, match) + matchlen;
+                    var pos_end = strpos(line, ')');
+                    var symbol = line.substring(pos_start, pos_end - pos_start);
+                    var newsymbol = null;
+
+                    if ((typeof values[symbol]) !== 'undefined') {
+                        newsymbol = 
                     }
                 }
                 ret.push(line);

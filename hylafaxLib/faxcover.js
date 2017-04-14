@@ -198,6 +198,6 @@ if (using_html_cp) {
         });
     }
 
-    tpl = func.process_html_template(coverpage_file, conf.COVERPAGE_MATCH, values);
+    tpl = func.process_template(coverpage_file, conf.COVERPAGE_MATCH, values);
     console.log(tpl.join(''));
 }
