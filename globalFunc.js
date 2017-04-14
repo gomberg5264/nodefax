@@ -81,7 +81,7 @@ module.exports = (() => {
                             "\257", "\325", "\323");
         
         if (text instanceof Array) {
-            print "<p>Got ";
+            console.log("<p>Got ");
             print_r(text);
             process.exit(1);
         }
@@ -192,7 +192,7 @@ module.exports = (() => {
                     var newsymbol = null;
 
                     if ((typeof values[symbol]) !== 'undefined') {
-                        newsymbol = 
+                        newsymbol = unaccent(values[symbol]);
                     }
                 }
                 ret.push(line);
