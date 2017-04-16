@@ -19,8 +19,9 @@ module.exports = ( () => {
             }
 
             fax_array = func.array_merge(fax_array, data);
+            console.log(fax_array);
 
-            return AddressBookFAX
+            return AddressBookFAX;
         }
     }
 
@@ -104,16 +105,12 @@ module.exports = ( () => {
             with_reserved = (with_reserved) ? true : false;
 
             var sql = (!with_reserved) ? {'company': {$ne: conf.RESERVED_FAX_NUM} } : {};
-            return AddressBook.find(
-                sql,
-                null,
-                {sort: {company: 1}},
-                (err, books) => {
+            return AddressBook.find(sql, null, {sort: {company: 1}})
+                .exec( (err, books) => {
                     if (err) return false;
 
                     return books;
-                }
-            );
+                });
         },
 
         search_companies: (query) => {
@@ -126,11 +123,12 @@ module.exports = ( () => {
             //var uc_kw = keywords.toUpperCase();
 
             var sql = {$or: [{'company': new RegExp(keywords, 'i')}, {'company': new RegExp(lc_kw, 'i')}]};
-            return AddressBook.find(sql, null, {sort: {company: 1}}, (err, books) => {
-                if (err) return false;
+            return AddressBook.find(sql, null, {sort: {company: 1}})
+                .exec( (err, books) => {
+                    if (err) return false;
 
-                return books;
-            })
+                    return books;
+                });
         },
 
         totalfaxes: () => {
@@ -187,12 +185,11 @@ module.exports = ( () => {
         has_fax2email: () => {
             return AddressBookFAX.find(
                 {$and: [{'abook_id': abook_id}, {'email': {$nin: ['', null]}}]},
-                {email: 1},
-                (err, bookfax) => {
+                {email: 1})
+                .exec( (err, bookfax) => {
                     if (err) return false;
                     return true;
-                }
-            );
+                });
         },
 
         get_company: () => {
@@ -504,7 +501,41 @@ module.exports = ( () => {
         load_faxvals: load_faxvals,
 
         create_contact: (name, email) => {
+            email_array['contact_name'] = name;
+            email_array['contact_email'] = email;
 
+            if (!email_array['contact_email']) {
+                error ='please enter a valid e-mail address.';
+                return false;
+            }
+
+            if (!email_array['contact_name']) {
+                error = 'You must enter a name.';
+                return false;
+            }
+
+            return AddressBookEmail.find({'contact_email': email_array['contact_email']})
+                .exec( (err, doc) => {
+                    if (doc) {
+                        error = 'Email address is already in use.';
+                        return false;
+                    }
+
+                    var bemail = new AddressBookEmail({
+                        contact_name: email_array['contact_name'],
+                        contact_email: email_array['contact_email']
+                    });
+
+                    bemail.save( (err, product) => {
+                        if (err) {
+                            error = 'AddressBookEmail contact not created.';
+                            return false;
+                        }
+
+                        email_array['abookemail_id'] = product._id;
+                        return true;
+                    });
+                });
         },
 
         create_contacts: (str) => {
@@ -515,8 +546,43 @@ module.exports = ( () => {
 
         },
 
-        make_contact_list: (abookemail_id, name, email) => {
+        make_contact_list: () => {
+            var abookemail_id, name, email;
+            
+            if (!queried) {
+                AddressBookEmail
+                    .find({},
+                        {'_id': 1, 'contact_name': 1, 'contact_email': 1},
+                        {sort: {'contact_name': 1}})
+                    .exec( (err, lists) => {
+                        if (err) {
+                            queried = false;
+                            results = null;
+                            return false;
+                        }
+                        results = lists;
+                        queried = true;
+                    });
+            }
 
+            if (results.length > 1) {
+                var data = results.shift();
+                if (data) {
+                    abookemail_id = data._id;
+                    name = data.contact_name;
+                    email = data.contact_email;
+                    return {
+                        result: true,
+                        abookemail_id,
+                        name,
+                        email
+                    };
+                }
+            }
+
+            queried = false;
+            results = null;
+            return false;
         },
 
         remove_contact: (abookemail_id) => {

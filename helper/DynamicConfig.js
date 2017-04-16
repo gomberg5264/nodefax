@@ -60,7 +60,10 @@ module.exports = (() => {
 
         remove: (id) => {
             if (mongoose.Types.ObjectId.isValid(id)) {
-                return DynConf.remove({ _id: id });
+                return DynConf.remove({ _id: id }, (err) => {
+                    if (err) return false;
+                    return true;
+                });
             }
             return false;
         },
@@ -81,7 +84,7 @@ module.exports = (() => {
                     dynconf_id = res['_id'];
                     device = res['device'];
                     callid = res['callid'];
-                    return true
+                    return true;
                 });
             }
 
