@@ -19,13 +19,16 @@ if (company_list) {
 
         var cnt = 0;
 
-        faxnums.forEach( (fax) => {
-            if (cnt > 0) fs.writeSync(handle, ";");
-            if (fax['faxnumber'].length) {
-                cnt++;
-                fs.writeSync(handle, fax['faxnumber']);
-            }
-        });
+        if(faxnums !== null) {
+            faxnums.forEach( (fax) => {
+                if (cnt > 0) fs.writeSync(handle, ";");
+                if (fax['faxnumber'].length) {
+                    cnt++;
+                    fs.writeSync(handle, fax['faxnumber']);
+                }
+            });
+        }
+        
         fs.writeSync(handle, "|||||||");
     });
 }

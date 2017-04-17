@@ -88,17 +88,18 @@ module.exports = ( () => {
 
             abook_id = cid;
 
-            if (AddressBook.findById(abook_id, (err, book) => {
-                if (book) {
-                    company = book.company;
-                    return true;
-                }
-            })) {
-                return true;
-            }
+            return AddressBook.findById(abook_id)
+                .exec( (err, book) => {
+                    if (err) {
+                        abook_id = null;
+                        return false;
+                    }
 
-            abook_id = null;
-            return false;
+                    if (book) {
+                        company = book.company;
+                        return true;
+                    }
+                });
         },
 
         get_companies: (with_reserved) => {
@@ -384,7 +385,7 @@ module.exports = ( () => {
                 return null;
             }
 
-            return AddressBookFax.find({'abook_id': abook_id}, (err, bookfaxes) => {
+            return AddressBookFAX.find({'abook_id': abook_id}, (err, bookfaxes) => {
                 if (err) return null;
                 return bookfaxes;
             });
@@ -543,7 +544,28 @@ module.exports = ( () => {
         },
 
         get_contacts: () => {
+            return AddressBookEmail.aggregate(
+                [
+                    {$project: {
+                        contact: {
+                            $concat: ['"$contact_name"', '<$contact_email>']
+                        }
+                    }}
+                ],
+                (err, doc) => {
+                    if (!(doc instanceof Array)) {
+                        error ='No contacts found.';
+                        return false;
+                    }
 
+                    var contacts = {};
+
+                    doc.forEach( (data) => {
+                        contacts[data['_id']] = data.contact;
+                    });
+
+                    return contacts;
+                });
         },
 
         make_contact_list: () => {
@@ -586,15 +608,59 @@ module.exports = ( () => {
         },
 
         remove_contact: (abookemail_id) => {
-
+            return AddressBookEmail.remove({'_id': abookemail_id}, (err) => {
+                if (err) return false;
+                return true;
+            });
         },
 
         load_contact_by_id: (abookemail_id) => {
+            email_array['abookemail_id'] = abookemail_id;
 
+            return AddressBookEmail.findById(email_array['abookemail_id'])
+                .exec( (err, doc) => {
+                    if (err) {
+                        email_array['abookemail_id'] = null;
+                        error = 'Invalid abookemail_id for this account' + email_array['abookemail_id'];
+                        return false;
+                    }
+
+                    email_array['contact_name'] = doc.contact_name;
+                    email_array['contact_email'] = doc.contact_email;
+                    return true;
+                });
         },
 
         update_contact: (name, email) => {
+            if (!email_array['abookemail_id']) {
+                error = 'No abookemail_id loaded';
+                return false;
+            }
 
+            email_array['contact_name'] = name;
+            email_array['contact_email'] = email;
+
+            if (!email_array['contact_email']) {
+                error = 'Please enter a valid e-mail address.';
+                return false;
+            }
+
+            if (!email_array['contact_name']) {
+                error = '';
+                return false;
+            }
+
+            return AddressBookEmail.findByIdAndUpdate(
+                email_array['abookemail_id'],
+                {$set: {
+                    'contact_name': email_array['contact_name'],
+                    'contact_email': email_array['contact_email']
+                }},
+                {new: true},
+                (err, doc) => {
+                    if (err) return false;
+                    return true;
+                });
         },
 
         get_contact_name: () => {

@@ -22,13 +22,6 @@ if (!func.isset(process.argv[3]) || process.argv[3] === "") {
 func.faxlog("dynconf> checking CallID1 " + callid1 + " on device " + device, true);
 
 var conf = dc.lookup(device, callid1);
-// Promise.all([conf, ]).then((data) => {
-//     func.faxlog("dynconf> rejecting " + callid1 + " on device " + device);
-// 	console.log("RejectCall: true");
-// }, (reason) => {
-//     console.log(reason);
-//     console.log('자료가 없으모니다...');
-// });
 conf.then((data) => {
     // console.log(data);
     
