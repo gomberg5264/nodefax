@@ -522,25 +522,52 @@ module.exports = ( () => {
                         return false;
                     }
 
-                    var bemail = new AddressBookEmail({
+                    var abemail = new AddressBookEmail({
                         contact_name: email_array['contact_name'],
                         contact_email: email_array['contact_email']
                     });
 
-                    bemail.save( (err, product) => {
+                    abemail.save( (err, bemail) => {
                         if (err) {
                             error = 'AddressBookEmail contact not created.';
                             return false;
                         }
 
-                        email_array['abookemail_id'] = product._id;
+                        email_array['abookemail_id'] = bemail._id;
                         return true;
                     });
                 });
         },
 
         create_contacts: (str) => {
+            var arr = str.split(/[;]/, -1);
 
+            arr.forEach( (value) => {
+                var data = value.split('<');
+                var name = data[0];
+                var email = (func.isset(data[1])) ? data[1] : null;
+
+                if (email) {
+                    email = email.replace(/[<>]/, '');
+                    email = email.trim();
+                }
+
+                name = name.replace(/[<>]/, '');
+                name = name.trim();
+
+                if (func.invalid_email(email)) {
+                    if (!func.invalid_email(name)) {
+                        email = name;
+
+                        var j = name.split('@');
+                        name = j[0].replace(/[._]/, ' ');
+
+                        module.exports.create_contact(name, email);
+                    }
+                } else {
+                    module.exports.create_contact(name, email);
+                }
+            });
         },
 
         get_contacts: () => {
@@ -551,8 +578,8 @@ module.exports = ( () => {
                             $concat: ['"$contact_name"', '<$contact_email>']
                         }
                     }}
-                ],
-                (err, doc) => {
+                ])
+                .exec( (err, doc) => {
                     if (!(doc instanceof Array)) {
                         error ='No contacts found.';
                         return false;
