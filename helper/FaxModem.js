@@ -125,9 +125,40 @@ module.exports = (() => {
 
                 var array = child_process.execSync(conf.FAXSTAT + ' 2>/dev/null');
                 console.log(array);
-                // array.forEach( (buffer) => {
-                //     var match = buffer.
-                // })
+                array.forEach( (buffer) => {
+                    var match = buffer.match(/ ([a-zA-Z0-9]*) /);
+                    if (!func.empty(match[1])) {
+                        Status = buffer.substring(buffer.indexOf(': ')+2);
+                        Status = Status.trim();
+
+                        var code, z, company;
+
+                        switch ( Status.substring(0, 2) ) {
+                            case 'Ru':  // Running (free)
+                                code = {'class': 'modem-free', 'status': 'Idle'}
+                                break;
+                            case 'Se':  // Sending fax
+                                z = Status.replace('Sending job ', '');
+                                code = {'class': 'modem-send', 'status': 'Sending a fax'};
+                                break;
+                            case 'Re':  // Receiving facsimile
+                                code = {'class': 'modem-recv', 'status': 'Receiving a fax'};
+                                z = Status.replace('Receiving from ', '');
+                                z = z.replace('Receiving facsimile', '');
+                                z = z.replace(/Receiving \[(\d+)\] from /, '');
+
+                                company = z;
+
+                                if (company) {
+                                    code = {'class': 'modem-recv-from', 'status': 'Receiving a fax from'};
+                                }
+                                break;
+                            default:
+                                code = {'class': null, 'status': 'Please wait'};
+                                break;
+                        }
+                    }
+                });
             }
 
             if (func.isset(status[device])) {

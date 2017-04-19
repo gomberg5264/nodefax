@@ -4,6 +4,7 @@ var bcrypt = require('bcryptjs');
 
 var conf = require('./hylafaxLib/config');
 var SysLog = require('./models/syslog');
+var AddressBook = require('./helper/AddressBook');
 
 module.exports = (() => {
 
@@ -103,7 +104,48 @@ module.exports = (() => {
             if (echo) console.log(log);
         },
 
-    	isset: (_var) => { return !!_var; },
+    	isset: () => {
+            var a = arguments;
+            var l = a.length;
+            var i = 0;
+            var undef;
+
+            if (l === 0) {
+                throw new Error('Empty isset');
+            }
+
+            while (i !== l) {
+                if (a[i] === undef || a[i] === null) {
+                    return false;
+                }
+                i++;
+            }
+
+            return true;
+        },
+
+        empty: (mixedVar) => {
+            var undef;
+            var key;
+            var i;
+            var len;
+            var emptyValues = [undef, null, false, 0, '', '0'];
+
+            for (i = 0, len = emptyValues.length; i < len; i++) {
+                if (mixedVar === emptyValues[i]) {
+                    return true;
+                }
+            }
+            if (typeof mixedVar === 'object') {
+                for (key in mixedVar) {
+                    if (mixedVar.hasOwnProperty(key)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return false;
+        },
 
         strip_sipinfo: (callid) => {
         	var matches;
@@ -232,6 +274,15 @@ module.exports = (() => {
         rem_nl: (str) => {
             var str = str.replace(/\r/, '');
             return str.replace(/\n/, '');
+        },
+
+        phone_lookup: (_var) => {
+            if (_var.match(/unknown/i) || _var.match(/unspecified/i) || !_var) {
+                return null;
+            }
+
+            var nvar = module.exports.clean_faxnum(_var);
+            AddressBook.loadbyfaxnum()
         }
     };
 
