@@ -279,13 +279,13 @@ module.exports = ( () => {
             });
         },
 
-        loadbyfaxnum: (faxnumber, mult) => {
+        loadbyfaxnum: (faxnumber) => {
             if (!faxnumber) {
                 error = 'No faxnumber sent';
                 return false;
             }
 
-            mult = false;
+            var mult = false;
             multiple = false;
 
             faxnumber = func.clean_faxnum(faxnumber);

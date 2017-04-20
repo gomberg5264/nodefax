@@ -1,5 +1,6 @@
 var fs = require('fs');
 var path = require('path');
+var child_process = require('child_process');
 var bcrypt = require('bcryptjs');
 
 var conf = require('./hylafaxLib/config');
@@ -282,7 +283,60 @@ module.exports = (() => {
             }
 
             var nvar = module.exports.clean_faxnum(_var);
-            AddressBook.loadbyfaxnum()
+            if(!AddressBook.loadbyfaxnum(nvar)) {
+                return null;
+            } else {
+                return AddressBook.get_company();
+            }
+        },
+
+        faxinfo: (str_path) => {
+            var values = {};
+            var datas = child_process.execSync(conf.FAXINFO + ' -n' + str_path);
+            
+            datas.forEach( (value) => {
+                var pos = value.indexOf(':');
+                var left = value.substring(0, pos);
+                var right = value.substring(pos + 1);
+                values[left.trim()] = right.trim();
+            });
+
+            if (values['Sender'].match(/UNKNOWN/i) ||
+                values['Sender'].match(/UNSPECIFIED/i) ||
+                !module.exports.isset(values['Sender']) ||
+                module.exports.empty(values['Sender'])) {
+                    module.exports.faxlog(`faxinfo> XDEBUG CHECK sender '${values['Sender']}' in faxfile '${str_path}'`);
+                    values['Sender'] = conf.RESERVED_FAX_NUM;
+            }
+
+            values['CallID' + conf.CALLIDn_CIDNumber] = module.exports.strip_sipinfo(values['CallID' + conf.CALLIDn_CIDNumber]);
+
+            if (values['Sender'] && values['Pages'] && values['Received']) {
+                return values;
+            }
+
+            return false;
+        },
+
+        system_v: (cmd) => {
+            //child_process.
+        },
+
+        tiff2pdf: (tiff_file, pdf) => {
+            var time_start = new Date().getTime();
+
+            fs.chmodSync(tiff_file, 0666);
+
+            var faxinfo = module.exports.faxinfo(tiff_file);
+            if (!faxinfo) {
+                console.log('tiff2pdf: Found corrupted fax');
+                module.exports.faxlog(`tiff2pdf> failed: ${tiff_file} corrupted`);
+                process.exit(1);
+            }
+
+            if (conf.HYLATIFF2PS) {
+                
+            }
         }
     };
 

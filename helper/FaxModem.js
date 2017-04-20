@@ -13,8 +13,10 @@ module.exports = (() => {
         faxcatid = null,
         contact = null;
     
-    var status = [];
+    var status = {};
     var didr_id;
+
+    var queried = false, results = null;
 
     return {
         create: (pDevice, pAlias, pContact, pPrinter, pFaxcatid) => {
@@ -90,7 +92,45 @@ module.exports = (() => {
         },
 
         list_modems: () => {
+            var data;
 
+            if (!queried) {
+                queried = true;
+                Modems.find({}, null, {sort: {device: 1}})
+                    .exec( (err, modem) => {
+                        results = modem;
+
+                        if (results instanceof Array) {
+                            data = results.shift();
+                            if (data) {
+                                return {
+                                    'device': data.device,
+                                    'devid': data._id,
+                                    'alias': data.alias
+                                };
+                            }
+                        } else {
+                            queried = false;
+                            error = 'No modem configured';
+                            return false;
+                        }
+                    });
+            } else {
+                if (results instanceof Array) {
+                    data = results.shift();
+                    if (data) {
+                        return {
+                            'device': data.device,
+                            'devid': data._id,
+                            'alias': data.alias
+                        };
+                    }
+                } else {
+                    queried = false;
+                    error = 'No modem configured';
+                    return false;
+                }
+            }
         },
 
         load_device: (pDevice) => {
@@ -120,7 +160,7 @@ module.exports = (() => {
         },
 
         get_status: () => {
-            if (status.length === 0) {
+            if (func.empty(status)) {
                 var Status = null;
 
                 var array = child_process.execSync(conf.FAXSTAT + ' 2>/dev/null');
@@ -148,6 +188,10 @@ module.exports = (() => {
                                 z = z.replace(/Receiving \[(\d+)\] from /, '');
 
                                 company = z;
+                                var res;
+                                if ((res = func.phone_lookup(z))) {
+                                    company = res;
+                                }
 
                                 if (company) {
                                     code = {'class': 'modem-recv-from', 'status': 'Receiving a fax from'};
@@ -157,6 +201,7 @@ module.exports = (() => {
                                 code = {'class': null, 'status': 'Please wait'};
                                 break;
                         }
+                        status[match[1]] = code;
                     }
                 });
             }
