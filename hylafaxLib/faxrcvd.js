@@ -4,7 +4,9 @@
 // console.log(process.argv);
 var fs = require('fs');
 var path = require('path');
+
 var FaxModem = require('./../helper/FaxModem');
+var AddressBook = require('./../helper/AddressBook');
 var func = require('./../globalFunc');
 var conf = require('./config');
 
@@ -104,4 +106,22 @@ if () {
 }
 
 console.log('Create PDF');
+
+func.tiff2pdf(faxfile, pdffile);
+
+console.log('Create Thumbnails');
+
+// AddressBook
+var faxnumid;
+var res = AddressBook.loadbyfaxnum(company_fax);
+
+if (res !== false) {
+    if (res.mult) {
+        faxnumid = 0;
+        console.log('WARNING: multiple results for faxnumber');
+    } else {
+        faxnumid = AddressBook.get_faxnumid();
+        AddressBook.inc_faxfrom();
+    }
+}
 

@@ -44,18 +44,23 @@ module.exports = (() => {
 
             var rule = {device: pDevice, callid: pCallid};
 
-            if (DynConf.find(rule)) {
-                error = "Rule exists";
-                return false;
-            }
-
-            var dc = new DynConf(rule);
-            if (dc.save()) {
-                return true;
-            }
-
-            error = "Rule not created";
-            return false;
+            return new Promise((resolve, reject) => {
+                DynConf.find(rule)
+                    .then( () => {
+                        error = "Rule exists";
+                        return reject(false);
+                    })
+                    .catch( (err) => {
+                        var dc = new DynConf(rule);
+                        dc.save().then( () => {
+                            return resolve(true);
+                        })
+                        .catch( () => {
+                            error = "Rule not created";
+                            return reject(false);
+                        });
+                    });
+            });
         },
 
         remove: (id) => {

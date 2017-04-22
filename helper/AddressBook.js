@@ -8,7 +8,7 @@ module.exports = ( () => {
     var abook_id, company, email_array={}, fax_array={}, error=null, multiple=false, queried=false, results=null;
 
     function save_settings(data) {
-        if ((typeof fax_array['abook_id']) === 'undefined') {
+        if ((typeof fax_array['abookfax_id']) === 'undefined') {
             error = 'No abookfax_id loaded';
             return false;
         }
@@ -30,10 +30,12 @@ module.exports = ( () => {
             error = 'No abookfax_id sent';
             return false;
         }
-        return AddressBookFAX.findByIdAndRemove(abookfax_id, (err, bookfax) => {
-            if (err) return false;
-            return true;
-        });
+
+        AddressBookFAX.findByIdAndRemove(abookfax_id)
+            .exec( (err, bookfax) => {
+                if (err) return false;
+                return true;
+            });
     }
 
     function load_faxvals(data) {
@@ -54,30 +56,26 @@ module.exports = ( () => {
             var lookup = {'company': company};
 
             // check if entry already exists
-            if (!AddressBook.find(lookup, (err, book) => {
+            AddressBook.find(lookup)
+                .exec( (err, book) => {
                     if (book) {
                         abook_id = book._id;
                         error = 'Company name already exists';
                         return false;
                     }
                     return true;
-            })) {
-                return false;
-            }
+                });
 
             var abook = new AddressBook(lookup);
-            if (abook.save( (err) => {
+            abook.save( (err) => {
                     if (!err) {
                         abook_id = abook._id;
                         return true;
                     }
-                    return false;
-            })) {
-                return true;
-            }
 
-            error = 'No abook_id created';
-            return false;
+                    error = 'No abook_id created';
+                    return false;
+            });
         },
 
         loadbycid: (cid) => {
@@ -88,7 +86,7 @@ module.exports = ( () => {
 
             abook_id = cid;
 
-            return AddressBook.findById(abook_id)
+            AddressBook.findById(abook_id)
                 .exec( (err, book) => {
                     if (err) {
                         abook_id = null;
@@ -106,7 +104,7 @@ module.exports = ( () => {
             with_reserved = (with_reserved) ? true : false;
 
             var sql = (!with_reserved) ? {'company': {$ne: conf.RESERVED_FAX_NUM} } : {};
-            return AddressBook.find(sql, null, {sort: {company: 1}})
+            AddressBook.find(sql, null, {sort: {company: 1}})
                 .exec( (err, books) => {
                     if (err) return false;
 
@@ -124,7 +122,7 @@ module.exports = ( () => {
             //var uc_kw = keywords.toUpperCase();
 
             var sql = {$or: [{'company': new RegExp(keywords, 'i')}, {'company': new RegExp(lc_kw, 'i')}]};
-            return AddressBook.find(sql, null, {sort: {company: 1}})
+            AddressBook.find(sql, null, {sort: {company: 1}})
                 .exec( (err, books) => {
                     if (err) return false;
 
@@ -161,7 +159,7 @@ module.exports = ( () => {
                 return false;
             }
             company = companyname;
-            return AddressBook.update(
+            AddressBook.update(
                 {'_id': abook_id},
                 {$set: {'company': company}},
                 (err) => {
@@ -177,14 +175,16 @@ module.exports = ( () => {
                 error = 'No abook_id loaded';
                 return false;
             }
-            return AddressBook.findByIdAndRemove(cid, (err, res) => {
-                if (err) return false;
-                return true;
-            });
+
+            AddressBook.findByIdAndRemove(cid)
+                .exec( (err, res) => {
+                    if (err) return false;
+                    return true;
+                });
         },
 
         has_fax2email: () => {
-            return AddressBookFAX.find(
+            AddressBookFAX.find(
                 {$and: [{'abook_id': abook_id}, {'email': {$nin: ['', null]}}]},
                 {email: 1})
                 .exec( (err, bookfax) => {
@@ -221,31 +221,30 @@ module.exports = ( () => {
 
             var lookup = {$and: [{'abook_id': abook_id}, {'faxnumber': fax_array['faxnumber']}]};
 
-            if (!AddressBookFAX.find(lookup, (err) => {
-                if (err) return false;
-                return true;
-            })) {
-                error = 'Company already has this fax number';
-                return false;
-            }
+            AddressBookFAX.find(lookup)
+                .exec( (err) => {
+                    if (err) {
+                        error = 'Company already has this fax number';
+                        return false;
+                    }
+
+                    return true;
+            });
 
             var abookfax = new AddressBookFAX({
                 'abook_id': abook_id,
                 'faxnumber': fax_array['faxnumber']
             });
-            if (abookfax.save( (err, bookfax) => {
-                if (err) return false;
-                if (bookfax) {
-                    fax_array['abookfax_id'] = bookfax._id;
-                    return true;
+            abookfax.save( (err, bookfax) => {
+                if (err || !bookfax) {
+                    error = 'Could not create faxnumid';
+                    fax_array['abookfax_id'] = null;
+                    return false;
                 }
-            })) {
-                return true;
-            }
 
-            error = 'Could not create faxnumid';
-            fax_array['abookfax_id'] = null;
-            return false;
+                fax_array['abookfax_id'] = bookfax._id;
+                return true;
+            });
         },
 
         delete_companyfaxids: (cid) => {
@@ -253,7 +252,7 @@ module.exports = ( () => {
                 error = 'No abook_id sent';
                 return false;
             }
-            return AddressBookFAX.remove({'abook_id': cid}, (err) => {
+            AddressBookFAX.remove({'abook_id': cid}, (err) => {
                 if (err) return false;
                 return true;
             });
@@ -269,7 +268,7 @@ module.exports = ( () => {
 
             fax_array = {};
 
-            return AddressBookFAX.findById(abookfax_id, (err, bookfax) => {
+            AddressBookFAX.findById(abookfax_id, (err, bookfax) => {
                 if (err) {
                     error = 'No company for this fax number';
                     return false;
@@ -290,27 +289,26 @@ module.exports = ( () => {
 
             faxnumber = func.clean_faxnum(faxnumber);
 
-            if (AddressBookFAX.find({'faxnumber': faxnumber}, (err, bookfaxes) => {
-                if (err) return false;
+            AddressBookFAX.find({'faxnumber': faxnumber})
+                 .exec( (err, bookfaxes) => {
+                    if (err) return false;
 
-                if (bookfaxes instanceof Array) {
-                    var num = bookfaxes.length;
+                    if (bookfaxes instanceof Array) {
+                        var num = bookfaxes.length;
 
-                    if (num === 1) {
-                        load_faxvals(bookfaxes[0]);
+                        if (num === 1) {
+                            load_faxvals(bookfaxes[0]);
+                        }
+                        else if (num > 1) {
+                            mult = true;
+                            multiple = true;
+                        }
+                        return {'result': true, 'mult': mult};
+                    } else {
+                        error = "No company for this fax number '" + faxnumber + "'";
+                        return false;
                     }
-                    else if (num > 1) {
-                        mult = true;
-                        multiple = true;
-                    }
-                    return true;
-                }
-            })) {
-                return {'result': true, 'mult': mult};
-            }
-
-            error = "No company for this fax number '" + faxnumber + "'";
-            return false;
+            });
         },
 
         reassign: (newcid) => {
@@ -319,26 +317,27 @@ module.exports = ( () => {
                 return false;
             }
 
-            return AddressBookFAX.find({'abook_id': newcid}, (err, bookfax) => {
-                if (err) {
-                    error = 'Invalid cid';
-                    return false;
-                }
+            AddressBookFAX.find({'abook_id': newcid})
+                .exec( (err, bookfax) => {
+                    if (err) {
+                        error = 'Invalid cid';
+                        return false;
+                    }
 
-                if (bookfax) {
-                    return AddressBookFAX.update(
-                        {'abook_id': abook_id},
-                        {$set: {'abook_id': newcid}},
-                        (err, upd_bookfax) => {
-                            if (err) {
-                                error = 'Error updating AddressBookFAX';
-                                return false;
+                    if (bookfax) {
+                        AddressBookFAX.update(
+                            {'abook_id': abook_id},
+                            {$set: {'abook_id': newcid}},
+                            (err, upd_bookfax) => {
+                                if (err) {
+                                    error = 'Error updating AddressBookFAX';
+                                    return false;
+                                }
+                                return module.exports.delete_cid(abook_id);
                             }
-                            return module.exports.delete_cid(abook_id);
-                        }
-                    );
-                }
-            });
+                        );
+                    }
+                });
         },
 
         save_settings: save_settings,
@@ -385,10 +384,11 @@ module.exports = ( () => {
                 return null;
             }
 
-            return AddressBookFAX.find({'abook_id': abook_id}, (err, bookfaxes) => {
-                if (err) return null;
-                return bookfaxes;
-            });
+            AddressBookFAX.find({'abook_id': abook_id})
+                .exec( (err, bookfaxes) => {
+                    if (err) return null;
+                    return bookfaxes;
+                });
         },
 
         get_faxnumber: () => {
@@ -515,7 +515,7 @@ module.exports = ( () => {
                 return false;
             }
 
-            return AddressBookEmail.find({'contact_email': email_array['contact_email']})
+            AddressBookEmail.find({'contact_email': email_array['contact_email']})
                 .exec( (err, doc) => {
                     if (doc) {
                         error = 'Email address is already in use.';
@@ -571,7 +571,7 @@ module.exports = ( () => {
         },
 
         get_contacts: () => {
-            return AddressBookEmail.aggregate(
+            AddressBookEmail.aggregate(
                 [
                     {$project: {
                         contact: {
@@ -621,7 +621,6 @@ module.exports = ( () => {
                     name = data.contact_name;
                     email = data.contact_email;
                     return {
-                        result: true,
                         abookemail_id,
                         name,
                         email
@@ -635,16 +634,17 @@ module.exports = ( () => {
         },
 
         remove_contact: (abookemail_id) => {
-            return AddressBookEmail.remove({'_id': abookemail_id}, (err) => {
-                if (err) return false;
-                return true;
-            });
+            AddressBookEmail.remove({'_id': abookemail_id})
+                .exec( (err) => {
+                    if (err) return false;
+                    return true;
+                });
         },
 
         load_contact_by_id: (abookemail_id) => {
             email_array['abookemail_id'] = abookemail_id;
 
-            return AddressBookEmail.findById(email_array['abookemail_id'])
+            AddressBookEmail.findById(email_array['abookemail_id'])
                 .exec( (err, doc) => {
                     if (err) {
                         email_array['abookemail_id'] = null;
@@ -673,11 +673,11 @@ module.exports = ( () => {
             }
 
             if (!email_array['contact_name']) {
-                error = '';
+                error = 'You must enter a name.';
                 return false;
             }
 
-            return AddressBookEmail.findByIdAndUpdate(
+            AddressBookEmail.findByIdAndUpdate(
                 email_array['abookemail_id'],
                 {$set: {
                     'contact_name': email_array['contact_name'],
