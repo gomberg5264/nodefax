@@ -3,8 +3,9 @@
 var fs = require('fs');
 var func = require('./../globalFunc');
 
+var argc = process.argv.length;
 
-if (process.argv.length < 4) {
+if (argc < 4) {
     console.error('Usage: ' + process.argv[1] + 'qfile why jobtime [nextTry]');
     process.exit(1);
 }
@@ -14,8 +15,8 @@ var quiet = true;
 
 var qfile = process.argv[2];
 var why = process.argv[3];
-var jobtime = (process.argv.length >= 5) ? process.argv[4] : null;
-var nextTry = (process.argv.length >= 6) ? process.argv[5] : null;
+var jobtime = (argc >= 5) ? process.argv[4] : null;
+var nextTry = (argc >= 6) ? process.argv[5] : null;
 
 // open qfile for sender information
 if (!fs.existsSync(qfile)) {

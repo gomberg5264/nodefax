@@ -6,6 +6,7 @@ var bcrypt = require('bcryptjs');
 var conf = require('./hylafaxLib/config');
 var SysLog = require('./models/syslog');
 var AddressBook = require('./helper/AddressBook');
+var html_entity_decode = require('./helper/html_entity_decode');
 
 module.exports = (() => {
 
@@ -20,7 +21,7 @@ module.exports = (() => {
     }
 
     function decode_entity(val) {
-        return html_entity_decode(val, ENT_QUOTES, "UTF-8");
+        return html_entity_decode(val, 'ENT_QUOTES');
     }
 
     function unaccent(text) {
@@ -83,8 +84,8 @@ module.exports = (() => {
                             "\257", "\325", "\323");
         
         if (text instanceof Array) {
-            console.log("<p>Got ");
-            print_r(text);
+            console.log("Got ");
+            console.log(text);
             process.exit(1);
         }
         
@@ -149,8 +150,9 @@ module.exports = (() => {
         },
 
         strip_sipinfo: (callid) => {
-        	var matches;
-            if((matches = /^(.*)@(.*)$/.exec(callid) ) !== null) {
+        	var matches = /^(.*)@(.*)$/.exec(callid);
+            console.log(matches);
+            if(matches !== null) {
                 callid = matches[1];
             }
             return callid;
@@ -183,7 +185,7 @@ module.exports = (() => {
             return false;
         },
 
-        process_html_template: (template, match, values) {
+        process_html_template: (template, match, values) => {
             var ret = new Array();
             var lines = fs.readFileSync(template);
             var matchlen = match.length;
