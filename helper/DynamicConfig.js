@@ -4,10 +4,10 @@ var mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
 function DynamicConfig() {
-    this.dynconf_id= null;
+    this.dynconf_id = null;
     this.device = null;
     this.callid = null;
-    this.error = null;
+    this.error = '';
 }
 
 DynamicConfig.prototype.get_dynconf_id = function() { return this.dynconf_id; };
@@ -21,17 +21,15 @@ DynamicConfig.prototype.get_error = function() { return this.error; };
 DynamicConfig.prototype.lookup = function(pDevice, pCallid) {
     return new Promise( (resolve, reject) => {
         DynConf.find({callid: pCallid}, (err, docs) => {
-            if (err) throw err;
+            if (err) return reject(err);
 
             if (!docs) {
-                reject(false);
-                return;
+                return reject(false);
             }
 
             docs.forEach((row, index) => {
                 if (!row['device'] || row['device'] === pDevice) {
-                    resolve(true);
-                    return;
+                    return resolve(true);
                 }
             });
         });

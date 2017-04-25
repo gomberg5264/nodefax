@@ -25,6 +25,7 @@ func.faxlog("dynconf> checking CallID1 " + callid1 + " on device " + device, tru
 
 var dc = new DynamicConfig();
 console.log(dc);
+console.log(db);
 
 var conf = dc.lookup(device, callid1);
 conf.then((data) => {
@@ -35,14 +36,15 @@ conf.then((data) => {
 
     db.close();
 
-}, ((err) => {
+}, (err) => {
     console.log(err);
     console.log('자료가 없으모니다...');
     db.close();
-   
-})).catch((err) => {
+
+})
+.catch( (err) => {
     console.log(err);
     console.log('자료가 없으모니다...');
     db.close();
-    
+
 });

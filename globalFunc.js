@@ -5,7 +5,7 @@ var bcrypt = require('bcryptjs');
 
 var conf = require('./hylafaxLib/config');
 var SysLog = require('./models/syslog');
-var AddressBook = require('./helper/AddressBook');
+var AFAddressBook = require('./helper/AFAddressBook');
 var html_entity_decode = require('./helper/html_entity_decode');
 
 module.exports = (() => {
@@ -151,7 +151,7 @@ module.exports = (() => {
 
         strip_sipinfo: (callid) => {
         	var matches = /^(.*)@(.*)$/.exec(callid);
-            console.log(matches);
+            console.log('Strip sipinfo : ', matches);
             if(matches !== null) {
                 callid = matches[1];
             }
@@ -285,7 +285,8 @@ module.exports = (() => {
             }
 
             var nvar = module.exports.clean_faxnum(_var);
-            if(!AddressBook.loadbyfaxnum(nvar)) {
+            var addressbook = new AFAddressBook();
+            if(!addressbook.loadbyfaxnum(nvar)) {
                 return null;
             } else {
                 return AddressBook.get_company();
@@ -321,13 +322,13 @@ module.exports = (() => {
         },
 
         system_v: (cmd) => {
-            //child_process.
+            return child_process.execSync(cmd);
         },
 
         tiff2pdf: (tiff_file, pdf) => {
             var time_start = new Date().getTime();
 
-            fs.chmodSync(tiff_file, 0666);
+            fs.chmodSync(tiff_file, 0o666);
 
             var faxinfo = module.exports.faxinfo(tiff_file);
             if (!faxinfo) {
@@ -337,8 +338,23 @@ module.exports = (() => {
             }
 
             if (conf.HYLATIFF2PS) {
-                
+                child_process.execSync(`(cd ${conf.HYLASPOOL}; bin/tiff2pdf -o ${pdf} ${tiff_file} 2>/dev/null)`);
+            } else {
+                child_process.execSync(`${conf.TIFFPS} ${tiff_file} | ${conf.GSR} -sOutputFile=${pdf} - -c quit 2>/dev/null`);
             }
+
+            var time_end = new Date().getTime();
+
+            fs.stat(tiff_file, (err, stats) => {
+                if (!stats.isFile()) {
+                    module.exports.faxlog('tiff2pdf> failed to create ' + pdf);
+                } else {
+                    module.exports.faxlog('tiff2pdf> successfully created ' + pdf);
+                    fs.chmodSync(pdf, 0o666);
+                }
+
+                return Math.round(time_end - time_start);
+            });
         }
     };
 

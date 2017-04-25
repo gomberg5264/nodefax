@@ -3,6 +3,8 @@ var conf = require('./../hylafaxLib/config');
 var AddressBook = require('./../models/addressbook');
 var AddressBookEmail = require('./../models/addressbookemail');
 var AddressBookFAX = require('./../models/addressbookfax');
+var mongoose = require('mongoose');
+mongoose.Promise = global.Promise;
 
 function AFAddressBook() {
     this.abook_id = null;

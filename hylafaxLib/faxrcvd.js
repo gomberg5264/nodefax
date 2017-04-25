@@ -6,7 +6,7 @@ var fs = require('fs');
 var path = require('path');
 
 var FaxModem = require('./../helper/FaxModem');
-var AddressBook = require('./../helper/AddressBook');
+var AFAddressBook = require('./../helper/AFAddressBook');
 var func = require('./../globalFunc');
 var conf = require('./config');
 
@@ -102,7 +102,7 @@ var thumbnail = path.join(faxpath, conf.THUMBNAIL);
 var tiff_prog = (conf.TIFF_TO_G4) ? conf.TIFFCPG4 : conf.TIFFCP;
 
 // if fax failed to copy
-if () {
+if (func.system_v(`${tiff_prog} ${tiff_file} ${faxfile}`)) {
     func.faxlog(`faxrcvd> Failed to copy ${tiff_file} to ${faxfile}`, true);
     process.exit(1);
 }
@@ -115,7 +115,8 @@ console.log('Create Thumbnails');
 
 // AddressBook
 var faxnumid;
-var res = AddressBook.loadbyfaxnum(company_fax);
+var addressbook = new AFAddressBook();
+var res = addressbook.loadbyfaxnum(company_fax);
 
 if (res !== false) {
     if (res.mult) {
