@@ -6,6 +6,8 @@ var AddressBookFAX = require('./../models/addressbookfax');
 var mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
+module.exports = AFAddressBook;
+
 function AFAddressBook() {
     this.abook_id = null;
     this.company = null;
@@ -36,26 +38,27 @@ AFAddressBook.prototype.save_settings = function(data) {
 
             AddressBookFAX.findByIdAndUpdate(self.fax_array['abookfax_id'],
                 {$set: {
-                    abook_id: self.abook_id,
-                    faxnumber: self.fax_array['faxnumber'],
-                    email: self.fax_array['email'],
-                    description: self.fax_array['description'],
-                    to_person: self.fax_array['to_person'],
-                    to_location: self.fax_array['to_location'],
-                    to_voicenumber: self.fax_array['to_voicenumber'],
-                    faxcatid: self.fax_array['faxcatid'],
-                    faxfrom: self.fax_array['faxfrom'],
-                    faxto: self.fax_array['faxto'],
-                    printer: self.fax_array['printer']
+                    'abook_id': self.abook_id,
+                    'faxnumber': self.fax_array['faxnumber'],
+                    'email': self.fax_array['email'],
+                    'description': self.fax_array['description'],
+                    'to_person': self.fax_array['to_person'],
+                    'to_location': self.fax_array['to_location'],
+                    'to_voicenumber': self.fax_array['to_voicenumber'],
+                    'faxcatid': self.fax_array['faxcatid'],
+                    'faxfrom': self.fax_array['faxfrom'],
+                    'faxto': self.fax_array['faxto'],
+                    'printer': self.fax_array['printer']
                 } },
-                {new: true},
+                {upsert: true},
                 (err, res) => {
                     if (err) return reject(err);
                     return resolve(true);
                 });
         }
+        return reject(false);
     });
-};
+}
 
 AFAddressBook.prototype.delete_faxnumid = function(abookfax_id) {
     var self = this;
@@ -72,14 +75,14 @@ AFAddressBook.prototype.delete_faxnumid = function(abookfax_id) {
                 return resolve(true);
             });
     });
-};
+}
 
 AFAddressBook.prototype.load_faxvals = function(data) {
     this.fax_array = data;
     this.abook_id = data['abook_id'];
     this.company = null;
     return true;
-};
+}
 
 AFAddressBook.prototype.create = function(companyname) {
     var self = this;
@@ -115,7 +118,7 @@ AFAddressBook.prototype.create = function(companyname) {
                 return reject(self.error);
         });
     });
-};
+}
 
 AFAddressBook.prototype.loadbycid = function(cid) {
     var self = this;
@@ -139,7 +142,7 @@ AFAddressBook.prototype.loadbycid = function(cid) {
                 return resolve(true);
             });
     });
-};
+}
 
 AFAddressBook.prototype.get_companies = function(with_reserved) {
     with_reserved = (with_reserved) ? true : false;
@@ -154,7 +157,7 @@ AFAddressBook.prototype.get_companies = function(with_reserved) {
                 return resolve(books);
             });
     });
-};
+}
 
 AFAddressBook.prototype.search_companies = function(query) {
     var keywords = query.trim();
@@ -175,7 +178,7 @@ AFAddressBook.prototype.search_companies = function(query) {
                 return resolve(books);
             });
     });
-};
+}
 
 AFAddressBook.prototype.totalfaxes = function() {
     if ((typeof this.fax_array['abookfax_id']) !== 'undefined') {
@@ -185,7 +188,7 @@ AFAddressBook.prototype.totalfaxes = function() {
     var from = this.fax_array['faxfrom'];
     var to = this.fax_array['faxto'];
     return {'from': from, 'to': to};
-};
+}
 
 AFAddressBook.prototype.get_companyid = function() {
     if (!this.abook_id) {
@@ -193,7 +196,7 @@ AFAddressBook.prototype.get_companyid = function() {
         return null;
     }
     return this.abook_id;
-};
+}
 
 AFAddressBook.prototype.set_company = function(companyname) {
     var self = this;
@@ -219,7 +222,7 @@ AFAddressBook.prototype.set_company = function(companyname) {
                 return resolve(true);
         });
     });
-};
+}
 
 AFAddressBook.prototype.delete_cid = function(cid) {
     var self = this;
@@ -236,7 +239,7 @@ AFAddressBook.prototype.delete_cid = function(cid) {
                 return resolve(true);
             });
     });
-};
+}
 
 AFAddressBook.prototype.has_fax2email = function() {
     var self = this;
@@ -250,7 +253,7 @@ AFAddressBook.prototype.has_fax2email = function() {
                 return resolve(true);
             });
     });
-};
+}
 
 AFAddressBook.prototype.get_company = function() {
     if (!this.abook_id) {
@@ -259,9 +262,9 @@ AFAddressBook.prototype.get_company = function() {
     }
 
     return this.company;
-};
+}
 
-AFAddressBook.prototype.get_error = function() { return this.error; };
+AFAddressBook.prototype.get_error = function() { return this.error; }
 
 AFAddressBook.prototype.create_faxnumid = function(faxnumber) {
     var self = this;
@@ -304,7 +307,7 @@ AFAddressBook.prototype.create_faxnumid = function(faxnumber) {
                 });
             });
     });
-};
+}
 
 AFAddressBook.prototype.delete_companyfaxids = function(cid) {
     var self = this;
@@ -319,7 +322,7 @@ AFAddressBook.prototype.delete_companyfaxids = function(cid) {
             return resolve(true);
         });
     });
-};
+}
 
 AFAddressBook.prototype.loadbyfaxnumid = function(abookfax_id) {
     var self = this;
@@ -341,7 +344,7 @@ AFAddressBook.prototype.loadbyfaxnumid = function(abookfax_id) {
             return resolve(self.load_faxvals(bookfax));
         });
     });
-};
+}
 
 AFAddressBook.prototype.loadbyfaxnum = function(faxnumber) {
     var self = this;
@@ -378,7 +381,7 @@ AFAddressBook.prototype.loadbyfaxnum = function(faxnumber) {
                 }
         });
     });
-};
+}
 
 AFAddressBook.prototype.reassign = function(newcid) {
     var self = this;
@@ -411,56 +414,73 @@ AFAddressBook.prototype.reassign = function(newcid) {
                 }
             });
     });
-};
+}
 
 AFAddressBook.prototype.get_multinfo = function() {
-    if (!multiple) {
-        error = 'No nultiple results';
-        return false;
-    }
+    var self = this;
 
-    if (!queried) {
-        var faxnumber = ((typeof this.fax_array['faxnumber']) !== 'undefined') ?
-            fax_array['faxnumber'] : null;
-        
-        AddressBookFAX.find({'faxnumber': faxnumber}, {'_id': 1})
-                    .populate('abook_id','company')
-                    .exec( (err, bookfaxes) => {
-                        queried = true;
-                        results = bookfaxes;
+    return new Promise( (resolve, reject) => {
+        if (!self.multiple) {
+            self.error = 'No multiple results';
+            return reject(self.error);
+        }
+
+        if (!self.queried) {
+            var faxnumber = ((typeof self.fax_array['faxnumber']) !== 'undefined') ?
+                self.fax_array['faxnumber'] : null;
+            
+            AddressBookFAX.find({'faxnumber': faxnumber}, {'_id': 1})
+                        .populate('abook_id','company')
+                        .exec( (err, bookfaxes) => {
+                            self.queried = true;
+                            self.results = bookfaxes;
+
+                            if (self.results instanceof Array) {
+                                var data = self.results.shift();
+                                if (data) {
+                                    return resolve({
+                                        'abookfax_id': data._id,
+                                        'company': data.abook_id.company
+                                    });
+                                }
+                            }
+                        });
+        } else {
+            if (self.results instanceof Array) {
+                var data = self.results.shift();
+                if (data) {
+                    return resolve({
+                        'abookfax_id': data._id,
+                        'company': data.abook_id.company
                     });
-    }
-
-    if (results instanceof Array) {
-        var data = results.shift();
-        if (data) {
-            return {
-                'result': true,
-                'abookfax_id': data._id,
-                'company': data.abook_id.company
+                }
             }
         }
-    }
 
-    multiple = false;
-    fax_array['faxnumber'] = null;
-    queried = false;
-    results = null;
-    return false;
-};
+        self.multiple = false;
+        self.fax_array['faxnumber'] = null;
+        self.queried = false;
+        self.results = null;
+        return reject(false);
+    });
+}
 
 AFAddressBook.prototype.get_faxnums = function() {
-    if (!abook_id) {
-        error = 'No abook_id loaded';
-        return null;
-    }
+    var self = this;
 
-    AddressBookFAX.find({'abook_id': abook_id})
-        .exec( (err, bookfaxes) => {
-            if (err) return null;
-            return bookfaxes;
-        });
-};
+    return new Promise( (resolve, reject) => {
+        if (!self.abook_id) {
+            self.error = 'No abook_id loaded';
+            return reject(self.error);
+        }
+
+        AddressBookFAX.find({'abook_id': self.abook_id})
+            .exec( (err, bookfaxes) => {
+                if (err) return reject(err);
+                return resolve(bookfaxes);
+            });
+    });
+}
 
 AFAddressBook.prototype.get_faxnumber = function() {
     if ((typeof this.fax_array['abookfax_id']) === 'undefined') {
@@ -468,7 +488,7 @@ AFAddressBook.prototype.get_faxnumber = function() {
         return false;
     }
     return ((typeof this.fax_array['faxnumber']) !== 'undefined') ? this.fax_array['faxnumber'] : null;
-};
+}
 
 AFAddressBook.prototype.get_description = function() {
     if ((typeof this.fax_array['abookfax_id']) === 'undefined') {
@@ -476,7 +496,7 @@ AFAddressBook.prototype.get_description = function() {
         return false;
     }
     return ((typeof this.fax_array['description']) !== 'undefined') ? this.fax_array['description'] : null;
-};
+}
 
 AFAddressBook.prototype.get_category = function() {
     if ((typeof this.fax_array['abookfax_id']) === 'undefined') {
@@ -484,7 +504,7 @@ AFAddressBook.prototype.get_category = function() {
         return false;
     }
     return ((typeof this.fax_array['faxcatid']) !== 'undefined') ? this.fax_array['faxcatid'] : null;
-};
+}
 
 AFAddressBook.prototype.get_printer = function() {
     if ((typeof this.fax_array['abookfax_id']) === 'undefined') {
@@ -492,7 +512,7 @@ AFAddressBook.prototype.get_printer = function() {
         return false;
     }
     return ((typeof this.fax_array['printer']) !== 'undefined') ? this.fax_array['printer'] : null;
-};
+}
 
 AFAddressBook.prototype.get_faxnumid = function() {
     if ((typeof this.fax_array['abookfax_id']) === 'undefined') {
@@ -500,7 +520,7 @@ AFAddressBook.prototype.get_faxnumid = function() {
         return false;
     }
     return this.fax_array['abookfax_id'];
-};
+}
 
 AFAddressBook.prototype.get_email = function() {
     if ((typeof this.fax_array['abookfax_id']) === 'undefined') {
@@ -508,7 +528,7 @@ AFAddressBook.prototype.get_email = function() {
         return false;
     }
     return ((typeof this.fax_array['email']) !== 'undefined') ? this.fax_array['email'] : null;
-};
+}
 
 AFAddressBook.prototype.get_faxfrom = function() {
     if ((typeof this.fax_array['abookfax_id']) === 'undefined') {
@@ -516,7 +536,7 @@ AFAddressBook.prototype.get_faxfrom = function() {
         return false;
     }
     return ((typeof this.fax_array['faxfrom']) !== 'undefined') ? this.fax_array['faxfrom'] : null;
-};
+}
 
 AFAddressBook.prototype.get_faxto = function() {
     if ((typeof this.fax_array['abookfax_id']) === 'undefined') {
@@ -524,7 +544,7 @@ AFAddressBook.prototype.get_faxto = function() {
         return false;
     }
     return ((typeof this.fax_array['faxto']) !== 'undefined') ? this.fax_array['faxto'] : null;
-};
+}
 
 AFAddressBook.prototype.get_to_person = function() {
     if ((typeof this.fax_array['abookfax_id']) === 'undefined') {
@@ -532,7 +552,7 @@ AFAddressBook.prototype.get_to_person = function() {
         return false;
     }
     return ((typeof this.fax_array['to_person']) !== 'undefined') ? this.fax_array['to_person'] : null;
-};
+}
 
 AFAddressBook.prototype.get_to_location = function() {
     if ((typeof this.fax_array['abookfax_id']) === 'undefined') {
@@ -540,7 +560,7 @@ AFAddressBook.prototype.get_to_location = function() {
         return false;
     }
     return ((typeof this.fax_array['to_location']) !== 'undefined') ? this.fax_array['to_location'] : null;
-};
+}
 
 AFAddressBook.prototype.get_to_voicenumber = function() {
     if ((typeof this.fax_array['abookfax_id']) === 'undefined') {
@@ -548,7 +568,7 @@ AFAddressBook.prototype.get_to_voicenumber = function() {
         return false;
     }
     return ((typeof this.fax_array['to_voicenumber']) !== 'undefined') ? this.fax_array['to_voicenumber'] : null;
-};
+}
 
 AFAddressBook.prototype.inc_faxfrom = function() {
     if ((typeof this.fax_array['abookfax_id']) === 'undefined') {
@@ -558,7 +578,7 @@ AFAddressBook.prototype.inc_faxfrom = function() {
 
     var faxfrom = ((typeof this.fax_array['faxfrom']) !== 'undefined') ? this.fax_array['faxfrom']+1 : 1;
     return self.save_settings({'faxfrom': faxfrom});
-};
+}
 
 AFAddressBook.prototype.inc_faxto = function() {
     if ((typeof this.fax_array['abookfax_id']) === 'undefined') {
@@ -568,7 +588,7 @@ AFAddressBook.prototype.inc_faxto = function() {
 
     var faxto = ((typeof this.fax_array['faxto']) !== 'undefined') ? this.fax_array['faxto']+1 : 1;
     return self.save_settings({'faxto': faxto});
-};
+}
 
 AFAddressBook.prototype.create_contact = function(name, email) {
     this.email_array['contact_name'] = name;
@@ -610,7 +630,7 @@ AFAddressBook.prototype.create_contact = function(name, email) {
                 });
             });
     });
-};
+}
 
 AFAddressBook.prototype.create_contacts = function(str) {
     var self = this;
@@ -642,7 +662,7 @@ AFAddressBook.prototype.create_contacts = function(str) {
             self.create_contact(name, email);
         }
     });
-};
+}
 
 AFAddressBook.prototype.get_contacts = function() {
     var self = this;
@@ -671,7 +691,7 @@ AFAddressBook.prototype.get_contacts = function() {
                 return resolve(contacts);
             });
     });
-};
+}
 
 AFAddressBook.prototype.make_contact_list = function() {
     var self = this;
@@ -712,7 +732,7 @@ AFAddressBook.prototype.make_contact_list = function() {
         self.results = null;
         return reject(false);
     });
-};
+}
 
 AFAddressBook.prototype.remove_contact = function(abookemail_id) {
     return new Promise( (resolve, reject) => {
@@ -722,7 +742,7 @@ AFAddressBook.prototype.remove_contact = function(abookemail_id) {
                 return resolve(true);
             });
     });
-};
+}
 
 AFAddressBook.prototype.load_contact_by_id = function(abookemail_id) {
     this.email_array['abookemail_id'] = abookemail_id;
@@ -742,7 +762,7 @@ AFAddressBook.prototype.load_contact_by_id = function(abookemail_id) {
                 return resolve(true);
             });
     });
-};
+}
 
 AFAddressBook.prototype.update_contact = function(name, email) {
     var self = this;
@@ -772,20 +792,18 @@ AFAddressBook.prototype.update_contact = function(name, email) {
                 'contact_name': self.email_array['contact_name'],
                 'contact_email': self.email_array['contact_email']
             }},
-            {new: true},
+            {upsert: true},
             (err, doc) => {
                 if (err) return reject(err);
                 return resolve(true);
             });
     });
-};
+}
 
 AFAddressBook.prototype.get_contact_name = function() {
     return this.email_array['contact_name'];
-};
+}
 
 AFAddressBook.prototype.get_contact_email = function() {
     return this.email_array['contact_email'];
-};
-
-module.exports = AFAddressBook;
+}

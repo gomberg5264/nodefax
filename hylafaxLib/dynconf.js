@@ -24,12 +24,10 @@ console.log('CallID1 : ', callid1);
 func.faxlog("dynconf> checking CallID1 " + callid1 + " on device " + device, true);
 
 var dc = new DynamicConfig();
-console.log(dc);
-console.log(db);
 
 var conf = dc.lookup(device, callid1);
 conf.then((data) => {
-    // console.log(data);
+    console.log(data);
     
 	func.faxlog("dynconf> rejecting " + callid1 + " on device " + device, true);
 	console.log("RejectCall: true");

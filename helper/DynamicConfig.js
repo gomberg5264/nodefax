@@ -3,6 +3,8 @@ var SysLog = require('./../models/syslog');
 var mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
+module.exports = DynamicConfig;
+
 function DynamicConfig() {
     this.dynconf_id = null;
     this.device = null;
@@ -10,13 +12,13 @@ function DynamicConfig() {
     this.error = '';
 }
 
-DynamicConfig.prototype.get_dynconf_id = function() { return this.dynconf_id; };
+DynamicConfig.prototype.get_dynconf_id = function() { return this.dynconf_id; }
 
-DynamicConfig.prototype.get_device = function() { return this.device; };
+DynamicConfig.prototype.get_device = function() { return this.device; }
 
-DynamicConfig.prototype.get_callid = function() { return this.callid; };
+DynamicConfig.prototype.get_callid = function() { return this.callid; }
 
-DynamicConfig.prototype.get_error = function() { return this.error; };
+DynamicConfig.prototype.get_error = function() { return this.error; }
 
 DynamicConfig.prototype.lookup = function(pDevice, pCallid) {
     return new Promise( (resolve, reject) => {
@@ -34,7 +36,7 @@ DynamicConfig.prototype.lookup = function(pDevice, pCallid) {
             });
         });
     });
-};
+}
 
 DynamicConfig.prototype.create = function(pDevice, pCallid) {
     var self = this;
@@ -60,7 +62,7 @@ DynamicConfig.prototype.create = function(pDevice, pCallid) {
             }
         );
     });
-};
+}
 
 DynamicConfig.prototype.remove = function(id) {
     return new Promise( (resolve, reject) => {
@@ -72,11 +74,11 @@ DynamicConfig.prototype.remove = function(id) {
         }
         return reject(false);
     });
-};
+}
 
 DynamicConfig.prototype.list_rules = function() {
     return DynConf.find().sort({ callid: 1 });
-};
+}
 
 DynamicConfig.prototype.load_rule = function(id) {
     var self = this;
@@ -100,7 +102,7 @@ DynamicConfig.prototype.load_rule = function(id) {
         self.error = "Rule " + id + " doesn't exist";
         return reject(false);
     });
-};
+}
 
 DynamicConfig.prototype.save_rule = function(pDevice, pCallid) {
     var self = this;
@@ -124,6 +126,4 @@ DynamicConfig.prototype.save_rule = function(pDevice, pCallid) {
             return resolve(true);
         });
     });
-};
-
-module.exports = DynamicConfig;
+}

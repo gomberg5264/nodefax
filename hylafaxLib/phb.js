@@ -1,14 +1,17 @@
 #!/usr/bin/env node
 
 var fs = require('fs');
-var conf = require('./config');
 
-var AddressBook = require('./../helper/AddressBook');
+var db = require('./../models');
+var AFAddressBook = require('./../helper/AFAddressBook');
+var conf = require('./config');
 
 var handle = fs.openSync(conf.PHONEBOOK, 'w');
 fs.writeSync(handle, "PBOOK1.1");
 
-var company_list = AddressBook.get_companies();
+var addressbook = new AFAddressBook();
+
+var company_list = addressbook.get_companies();
 console.log(company_list);
 if (company_list) {
     company_list.forEach( (entry) => {

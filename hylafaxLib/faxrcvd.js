@@ -5,6 +5,7 @@
 var fs = require('fs');
 var path = require('path');
 
+var db = require('./../models');
 var FaxModem = require('./../helper/FaxModem');
 var AFAddressBook = require('./../helper/AFAddressBook');
 var func = require('./../globalFunc');
