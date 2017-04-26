@@ -3,8 +3,6 @@ var SysLog = require('./../models/syslog');
 var mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
-module.exports = DynamicConfig;
-
 function DynamicConfig() {
     this.dynconf_id = null;
     this.device = null;
@@ -127,3 +125,5 @@ DynamicConfig.prototype.save_rule = function(pDevice, pCallid) {
         });
     });
 }
+
+module.exports = DynamicConfig;

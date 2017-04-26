@@ -286,11 +286,14 @@ module.exports = (() => {
 
             var nvar = module.exports.clean_faxnum(_var);
             var addressbook = new AFAddressBook();
-            if(!addressbook.loadbyfaxnum(nvar)) {
-                return null;
-            } else {
-                return AddressBook.get_company();
-            }
+            return new Promise( (resolve, reject) => {
+                addressbook.loadbyfaxnum(nvar).then(
+                    (res) => {
+                        return resolve(addressbook.get_company());
+                    }, (err => {
+                        return resolve(null);
+                    }));
+            });
         },
 
         faxinfo: (str_path) => {

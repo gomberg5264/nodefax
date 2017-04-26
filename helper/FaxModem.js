@@ -215,14 +215,16 @@ FaxModem.prototype.get_status = function() {
                         z = z.replace(/Receiving \[(\d+)\] from /, '');
 
                         company = z;
-                        var res;
-                        if ((res = func.phone_lookup(z))) {
-                            company = res;
-                        }
+                        func.phone_lookup(z).then( (data) => {
+                            if (data) {
+                                company = data;
+                            }
 
-                        if (company) {
-                            code = {'class': 'modem-recv-from', 'status': 'Receiving a fax from'};
-                        }
+                            if (company) {
+                                code = {'class': 'modem-recv-from', 'status': 'Receiving a fax from'};
+                            }
+                        });
+
                         break;
 
                     default:

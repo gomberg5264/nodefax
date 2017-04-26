@@ -169,8 +169,8 @@ if (using_html_cp) {
 
     var filename = func.tmpfilename('html');
 
-    var fd;
-    if (!(fd = fs.openSync(filename, 'w'))) {
+    var fd = fs.openSync(filename, 'w');
+    if (!fd) {
         console.log(`Cannot open file (${filename})`);
         process.exit(1);
     }

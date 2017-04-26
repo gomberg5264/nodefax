@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 
 var fs = require('fs');
+
+var db = require('./../models');
+var AFAddressBook = require('./../helper/AFAddressBook');
 var func = require('./../globalFunc');
 
 var argc = process.argv.length;
@@ -128,3 +131,43 @@ file_data.forEach( (line) => {
 if (!to_company) {
     to_company = external;
 }
+
+var cid;
+var addressbook = new AFAddressBook();
+
+// lookup database entry for this fax number
+addressbook.loadbyfaxnum(external)
+    .then( (res) => {
+        if (res.mult) {
+            cid = 0;
+            func.faxlog('notify> Found fax number with multiple companies', true);
+        } else {
+            cid = addressbook.get_companyid();
+            addressbook.inc_faxto();    // increment faxto count
+        }
+    }, (err) => {   // if it doesn't exist, create it
+        addressbook.create(to_company)
+            .then( () => {
+                addressbook.create_faxnumid(external)
+                    .then( () => {
+                        // set to_location, to_voice, to_person
+                        addressbook.save_settings({
+                            'description': null,
+                            'faxcatid': null,
+                            'to_person': to_person,
+                            'to_location': to_location,
+                            'to_voice': to_voice
+                        });
+
+                        cid = addressbook.get_companyid();
+                        addressbook.inc_faxto();    // increment faxto count
+                        func.faxlog(`notify> Created company '${external}' with cid '${cid}'`, true);
+                    }, () => {  // Failed to create faxnumid
+                        cid = 0;
+                        func.faxlog("notify> Failed to create faxnumid for '"+external+"' - "+addressbook.get_error(), true);
+                    });
+            }, () => {  // Failed to create company
+                cid = 0;
+                func.faxlog("notify> Failed to create company '"+external+"' - "+addressbook.get_error(), true);
+            });
+    });

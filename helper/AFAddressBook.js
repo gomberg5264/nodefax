@@ -6,8 +6,6 @@ var AddressBookFAX = require('./../models/addressbookfax');
 var mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
-module.exports = AFAddressBook;
-
 function AFAddressBook() {
     this.abook_id = null;
     this.company = null;
@@ -19,7 +17,7 @@ function AFAddressBook() {
     this.results = null;
 }
 
-AFAddressBook.prototype.save_settings = function(data) {
+AFAddressBook.prototype.save_settings = function save_settings(data) {
     var self = this;
 
     return new Promise( (resolve, reject) => {
@@ -807,3 +805,5 @@ AFAddressBook.prototype.get_contact_name = function() {
 AFAddressBook.prototype.get_contact_email = function() {
     return this.email_array['contact_email'];
 }
+
+module.exports = AFAddressBook;
